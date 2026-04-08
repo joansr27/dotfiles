@@ -1,0 +1,11 @@
+# ignore neovim swap files
+*.swp
+
+# ignore any random files you might have
+# personal.txt
+
+# ignore environmental variables
+.env
+
+# ignore cache just in case
+.cache/
