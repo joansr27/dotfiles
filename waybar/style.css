@@ -34,3 +34,62 @@ window#waybar {
 	padding: 0 12px;
 	color: #cdd6f4;
 }
+
+
+
+
+/* --- BASE ICON STYLES ---
+#network, #bluetooth {
+    font-size: 16px;        Adjust size to fit your bar 
+    padding-right: 12px;    Spacing between modules 
+    padding-left: 12px;
+}
+*/
+
+/* --- WIFI OPACITY STATES --- */
+/* Default connected state is full opacity */
+#network {
+    opacity: 1.0; 
+}
+/* Disconnected state */
+#network.disconnected {
+    opacity: 0.5;
+}
+
+/* --- BLUETOOTH OPACITY STATES --- */
+/* Connected state is full opacity */
+#bluetooth.connected {
+    opacity: 1.0;
+}
+/* Disconnected (On but not paired) or Disabled/Off states */
+#bluetooth.on, 
+#bluetooth.off, 
+#bluetooth.disabled {
+    opacity: 0.5;
+}
+
+
+
+
+
+/*
+#bluetooth {
+	opacity: 1.0;
+	transition: opacity 0.2s ease;
+}
+
+#bluetooth.disconnected {
+	opacity: 0.5;
+}
+
+
+#network {
+	opacity: 1.0;
+	transition: opacity 0.2s ease;
+}
+
+#network.disconnected {
+	opacity: 0.5;
+}
+
+*/

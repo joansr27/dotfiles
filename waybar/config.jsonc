@@ -7,51 +7,20 @@
     "spacing": 4, // Gaps between modules (4px)
     // Choose the order of the modules
     "modules-left": [
-        //"sway/workspaces",
-        //"sway/mode",
-        //"sway/scratchpad",
-        //"custom/media"
 	"hyprland/workspaces"
     ],
     "modules-center": [
-        //"sway/window"
 	"clock"
     ],
     "modules-right": [
-        //"mpd",
-        //"idle_inhibitor",
 	"network",
 	"bluetooth",
         "pulseaudio",
         "power-profiles-daemon",
-        //"cpu",
-        //"memory",
-        //"temperature",
         "backlight",
-        //"keyboard-state",
-        //"sway/language",
         "battery"
-        //"battery#bat2",
-        //"tray"
-        //"custom/power"
     ],
-    // Modules configuration
-    // "sway/workspaces": {
-    //     "disable-scroll": true,
-    //     "all-outputs": true,
-    //     "warp-on-scroll": false,
-    //     "format": "{name}: {icon}",
-    //     "format-icons": {
-    //         "1": "",
-    //         "2": "",
-    //         "3": "",
-    //         "4": "",
-    //         "5": "",
-    //         "urgent": "",
-    //         "focused": "",
-    //         "default": ""
-    //     }
-    // },
+
     "hyprland/workspaces": {
 	"format": "{icon}",
 	"format-icons": {
@@ -62,128 +31,67 @@
     },
 
     "clock": {
-	"format": "{:%H:%M | %A, %b %d}"
+	"format": "{:%H:%M   %A, %b %d}"
     },
 
+
+    // --- WIFI MODULE ---
     "network": {
-	"format-wifi": "WiFi: {essid}",
-	"format-ethernet": "{ipaddr}/{cidr} ",
-	"format-disconnected": "Offline"
+        "format-wifi": "\uf1eb",             // Connected icon
+        "format-disconnected": "\uf66f",    // Disconnected/Disabled icon
+        "format-ethernet": "\uf796"        // Just in case you plug in
+        //"tooltip-format": "{essid} ({signalStrength}%)",
+        //"tooltip-format-disconnected": "Disconnected"
     },
 
+    // --- BLUETOOTH MODULE ---
     "bluetooth": {
-	"format": "BT: {status}"
+        "format-connected": "\uf294",       // Connected icon
+        "format-on": "\uf293",               // On, but disconnected icon
+        "format-off": "\uf05e",             // Disabled/Off icon
+        "format-disabled": "\uf05e"        // Disabled/Off icon
+        //"tooltip-format": "{controller_alias}\t{controller_address}",
+        //"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+        //"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
     },
 
-    //"pulseaudio": {
-	//"format": "Vol: {volume}%"
-    //},
-	
 
-    //"keyboard-state": {
-    //    "numlock": true,
-    //    "capslock": true,
-    //    "format": "{name} {icon}",
-    //    "format-icons": {
-    //        "locked": "",
-    //        "unlocked": ""
-    //    }
-    //},
-    //"sway/mode": {
-    //    "format": "<span style=\"italic\">{}</span>"
-    //},
-    //"sway/scratchpad": {
-    //    "format": "{icon} {count}",
-    //    "show-empty": false,
-    //    "format-icons": ["", ""],
-    //    "tooltip": true,
-    //    "tooltip-format": "{app}: {title}"
-    //},
-    //"mpd": {
-    //    "format": "{stateIcon} {consumeIcon}{randomIcon}{repeatIcon}{singleIcon}{artist} - {album} - {title} ({elapsedTime:%M:%S}/{totalTime:%M:%S}) ⸨{songPosition}|{queueLength}⸩ {volume}% ",
-    //    "format-disconnected": "Disconnected ",
-    //    "format-stopped": "{consumeIcon}{randomIcon}{repeatIcon}{singleIcon}Stopped ",
-    //    "unknown-tag": "N/A",
-    //    "interval": 5,
-    //    "consume-icons": {
-    //        "on": " "
-    //    },
-    //    "random-icons": {
-    //        "off": "<span color=\"#f53c3c\"></span> ",
-    //        "on": " "
-    //    },
-    //    "repeat-icons": {
-    //        "on": " "
-    //    },
-    //    "single-icons": {
-    //        "on": "1 "
-    //    },
-    //    "state-icons": {
-    //        "paused": "",
-    //        "playing": ""
-    //    },
-    //    "tooltip-format": "MPD (connected)",
-    //    "tooltip-format-disconnected": "MPD (disconnected)"
-    //},
-    //"idle_inhibitor": {
-    //    "format": "{icon}",
-    //    "format-icons": {
-    //        "activated": "",
-    //        "deactivated": ""
-    //    }
-    //},
-    //"tray": {
-    //    // "icon-size": 21,
-    //    "spacing": 10,
-    //    // "icons": {
-    //    //   "blueman": "bluetooth",
-    //    //   "TelegramDesktop": "$HOME/.local/share/icons/hicolor/16x16/apps/telegram.png"
-    //    // }
-    //},
-    //"clock": {
-        // "timezone": "America/New_York",
-    //    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-    //    "format-alt": "{:%Y-%m-%d}"
-    //},
-    //"cpu": {
-    //    "format": "{usage}% ",
-    //    "tooltip": false
-    //},
-    //"memory": {
-    //    "format": "{}% "
-    //},
-    //"temperature": {
-        // "thermal-zone": 2,
-        // "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
-    //    "critical-threshold": 80,
-        // "format-critical": "{temperatureC}°C {icon}",
-    //    "format": "{temperatureC}°C {icon}",
-    //    "format-icons": ["", "", ""]
-    //},
+
+    //"network": {
+	/* "format-wifi": "WiFi: {essid}", */
+//	"format-wifi": "\uf1eb",
+//	"format-connected": "\uf1eb",
+	/* "format-ethernet": "{ipaddr}/{cidr} ", */
+//	"format-ethernet": "\uf796", // {ipaddr}/{cidr}",
+//	"format-disconnected": "\uf6ab",
+//	"format-disabled": "\uf6ab",
+//	"states": {
+//		"disconnected": 0
+//	}
+//
+//    },
+
+//    "bluetooth": {
+//	"format": "\uf294",
+//	"format-connected": "\uf294",
+//	"format-disconnected": "\uf293",
+ //	"format-disabled": "\uf293",
+//	"states": {
+//		"disconnected": 0
+//	}
+
     "backlight": {
         "device": "acpi_video1",
-        "format": "{percent}% {icon}",
+        //"format": "{percent}% {icon}",
+	"format": "{icon}",
         "format-icons": ["", "", "", "", "", "", "", "", ""]
     },
 
     "battery": {
-        //"states": {
-            // "good": 95,
-        //    "warning": 30,
-        //    "critical": 15
-        //},
         "format": "{capacity}% {icon}",
-        "format-full": "{capacity}% {icon}",
-        "format-charging": "{capacity}% ",
-        "format-plugged": "{capacity}% ",
-        "format-alt": "{time} {icon}",
-        // "format-good": "", // An empty format will hide the module
-        // "format-full": "",
         "format-icons": ["", "", "", "", ""]
     },
-    //"battery#bat2": {
-    //    "bat": "BAT2"
-    //},
+    
     "power-profiles-daemon": {
       "format": "{icon}",
       "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
@@ -195,56 +103,17 @@
         "power-saver": ""
       }
     },
-    //"network": {
-        // "interface": "wlp2*", // (Optional) To force the use of this interface
-    //    "format-wifi": "{essid} ({signalStrength}%) ",
-    //    "format-ethernet": "{ipaddr}/{cidr} ",
-    //    "tooltip-format": "{ifname} via {gwaddr} ",
-    //    "format-linked": "{ifname} (No IP) ",
-    //    "format-disconnected": "Disconnected ⚠",
-    //    "format-alt": "{ifname}: {ipaddr}/{cidr}"
-    //},
+    
     "pulseaudio": {
         // "scroll-step": 1, // %, can be a float
         "format": "{volume}% {icon}", // {format_source}",
         "format-bluetooth": "{volume}% {icon}", // {format_source}",
-        //"format-bluetooth-muted": " {icon}", // {format_source}",
-        //"format-muted": " {format_source}",
-        //"format-source": "{volume}% ",
-        //"format-source-muted": "",
         "format-icons": {
             "headphone": "",
-            //"hands-free": "",
-            //"headset": "",
-            //"phone": "",
-            //"portable": "",
-            //"car": "",
-            "default": ["", "", ""]
+	    "default": ["", "", ""]
         },
         "on-click": "pavucontrol"
     }
-    //"custom/media": {
-    //    "format": "{icon} {text}",
-    //    "return-type": "json",
-    //    "max-length": 40,
-    //    "format-icons": {
-    //        "spotify": "",
-    //        "default": "🎜"
-    //    },
-    //    "escape": true,
-    //    "exec": "$HOME/.config/waybar/mediaplayer.py 2> /dev/null" // Script in resources folder
-        // "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
-    //},
-    //"custom/power": {
-    //    "format" : "⏻ ",
-		//"tooltip": false,
-		//"menu": "on-click",
-		//"menu-file": "$HOME/.config/waybar/power_menu.xml", // Menu file in resources folder
-		//"menu-actions": {
-		//	"shutdown": "shutdown",
-		//	"reboot": "reboot",
-		//	"suspend": "systemctl suspend",
-		//	"hibernate": "systemctl hibernate"
-		//}
-    //}
+
+
 }
