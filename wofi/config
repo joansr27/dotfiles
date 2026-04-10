@@ -1,6 +1,7 @@
 show = drun
 allow_images = true
-image_size = 20
+image_size = 25
 halign = center
 content_halign = center
 width = 30%
+height = 30%
