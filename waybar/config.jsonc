@@ -1,12 +1,12 @@
 // -*- mode: jsonc -*-
 {
-    "layer": "top", // Waybar at top layer
-    "position": "top", // Waybar position (top|bottom|left|right)
-    "height": 35, // Waybar height (to be removed for auto height)
-    // "width": 1280, // Waybar width
-    "spacing": 4, // Gaps between modules (4px)
-    // Choose the order of the modules
+    "layer": "top",
+    "position": "top",
+    "height": 35,
+    //"width": 1100,
+    "spacing": 4,
     "modules-left": [
+	"group/sysmenu",
 	"hyprland/workspaces"
     ],
     "modules-center": [
@@ -21,6 +21,8 @@
         "battery"
     ],
 
+// =====================================
+
     "hyprland/workspaces": {
 	"format": "{icon}",
 	"format-icons": {
@@ -34,86 +36,88 @@
 	"format": "{:%H:%M   %A, %b %d}"
     },
 
-
-    // --- WIFI MODULE ---
     "network": {
-        "format-wifi": "\uf1eb",             // Connected icon
-        "format-disconnected": "\uf66f",    // Disconnected/Disabled icon
-        "format-ethernet": "\uf796"        // Just in case you plug in
-        //"tooltip-format": "{essid} ({signalStrength}%)",
-        //"tooltip-format-disconnected": "Disconnected"
+        "format-wifi": "<span size='160%'>\uf1eb</span>",
+        "format-disconnected": "<span size='160%'>\uf1eb</span>",
+	"format-disabled": "<span size='160%'>&#xf092d;</span>",
+        "format-ethernet": "<span size='160%'>\uf796</span>"
     },
 
-    // --- BLUETOOTH MODULE ---
     "bluetooth": {
-        "format-connected": "\uf294",       // Connected icon
-        "format-on": "\uf293",               // On, but disconnected icon
-        "format-off": "\uf05e",             // Disabled/Off icon
-        "format-disabled": "\uf05e"        // Disabled/Off icon
-        //"tooltip-format": "{controller_alias}\t{controller_address}",
-        //"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
-        //"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
+        "format-connected": "<span size='120%'>\uf294</span>",
+        "format-on": "<span size='120%'>\uf294</span>",
+	"format-off": "<span size='130%'>&#xf00b2;</span>",
+        "format-disabled": "<span size='130%'>&#xf00b2;</span>"
     },
-
-
-
-    //"network": {
-	/* "format-wifi": "WiFi: {essid}", */
-//	"format-wifi": "\uf1eb",
-//	"format-connected": "\uf1eb",
-	/* "format-ethernet": "{ipaddr}/{cidr} ", */
-//	"format-ethernet": "\uf796", // {ipaddr}/{cidr}",
-//	"format-disconnected": "\uf6ab",
-//	"format-disabled": "\uf6ab",
-//	"states": {
-//		"disconnected": 0
-//	}
-//
-//    },
-
-//    "bluetooth": {
-//	"format": "\uf294",
-//	"format-connected": "\uf294",
-//	"format-disconnected": "\uf293",
- //	"format-disabled": "\uf293",
-//	"states": {
-//		"disconnected": 0
-//	}
 
     "backlight": {
         "device": "acpi_video1",
-        //"format": "{percent}% {icon}",
-	"format": "{icon}",
+	"format": "<span size='120%'>{icon}</span>",
         "format-icons": ["", "", "", "", "", "", "", "", ""]
     },
 
     "battery": {
-        "format": "{capacity}% {icon}",
+        "format": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span>",
         "format-icons": ["", "", "", "", ""]
     },
     
     "power-profiles-daemon": {
-      "format": "{icon}",
+      "format": "<span size='130%'>{icon}</span>",
       "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
       "tooltip": true,
       "format-icons": {
-        "default": "",
-        "performance": "",
-        "balanced": "",
-        "power-saver": ""
+        "default": "\uf24e",
+        "performance": "\uf135",
+        "balanced": "\uf219",
+        "power-saver": "\uf06c"
       }
     },
     
     "pulseaudio": {
-        // "scroll-step": 1, // %, can be a float
-        "format": "{volume}% {icon}", // {format_source}",
-        "format-bluetooth": "{volume}% {icon}", // {format_source}",
+        "format": "<span rise='3000'>{volume}%</span> <span size='160%'>{icon}</span>",
         "format-icons": {
             "headphone": "",
 	    "default": ["", "", ""]
-        },
-        "on-click": "pavucontrol"
+        }
+    },
+
+// ============================
+
+// --- SYSTEM MENU (INLINE DRAWER) ---
+    "group/sysmenu": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,        // Smooth sliding animation
+            "children-class": "sysmenu-child",
+            "transition-left-to-right": false  // Slides open right-to-left
+    	},
+        "modules": [
+            "custom/sysmenu",  // Sliding bars icon (always visible)
+            "custom/lock",     // Lock button
+            "custom/reboot",   // Restart button
+            "custom/power"     // Shutdown button
+        ]
+    },
+    "custom/sysmenu": {
+        "format": "<span size='130%'>\uf0c9</span>",
+        "tooltip": false
+    },
+    "custom/lock": {
+        "format": "<span size='120%'>&#xf0341;</span>",
+        "on-click": "hyprctl dispatch exit", // Standard systemd lock command
+        "tooltip-format": "Lock"
+    },
+    "custom/reboot": {
+        "format": "<span size='130%'>\uf021</span>", // Sync/Refresh icon
+        "on-click": "systemctl reboot",
+        "tooltip-format": "Restart"
+    },
+    "custom/power": {
+        "format": "<span size='130%'>\uf011</span>", // Power button icon
+        "on-click": "systemctl poweroff",
+        "tooltip-format": "Shutdown"
     }
 
+// ============================
 
 }

@@ -1,7 +1,8 @@
 * {
 	border: none;
 	border-radius: 0;
-	font-family: sans-serif;
+	/* font-family: sans-serif; */
+	font-family: JetBrainsMono Nerd Font Mono;
 	font-size: 11pt;
 	font-weight: bold;
 }
@@ -11,6 +12,8 @@ window#waybar {
 	/* this creates a 60% transparent dark tint */
 	background-color: rgba(17, 17, 27, 0.6);
 	color: #cdd6f4;
+	/* border-radius: 12px;
+	border: 1px solid rgba(205, 214, 244, 0.8) */
 }
 
 #workspaces button {
@@ -29,67 +32,68 @@ window#waybar {
 	background: transparent;
 }
 
+/* ============================================ */
+
 /* modules spacing */
 #clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery {
-	padding: 0 12px;
+	padding: 0 8px;
 	color: #cdd6f4;
 }
 
+/* ============================================ */
 
-
-
-/* --- BASE ICON STYLES ---
-#network, #bluetooth {
-    font-size: 16px;        Adjust size to fit your bar 
-    padding-right: 12px;    Spacing between modules 
-    padding-left: 12px;
-}
-*/
-
-/* --- WIFI OPACITY STATES --- */
-/* Default connected state is full opacity */
 #network {
     opacity: 1.0; 
 }
-/* Disconnected state */
+
+#network.disabled,
 #network.disconnected {
     opacity: 0.5;
 }
 
-/* --- BLUETOOTH OPACITY STATES --- */
-/* Connected state is full opacity */
 #bluetooth.connected {
     opacity: 1.0;
 }
-/* Disconnected (On but not paired) or Disabled/Off states */
+
 #bluetooth.on, 
 #bluetooth.off, 
 #bluetooth.disabled {
     opacity: 0.5;
 }
 
+/* ============================================ */
 
-
-
-
-/*
-#bluetooth {
-	opacity: 1.0;
-	transition: opacity 0.2s ease;
+/* --- SYSTEM MENU DRAWER BASE --- */
+#custom-sysmenu, #custom-lock, #custom-reboot, #custom-power {
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 16px;
+    padding: 0 10px; /* Breathing room between the sliding buttons */
+    color: #cdd6f4; /* rgba(255, 255, 255, 0.8); Keep the default glassy text color */
+    transition: all 0.3s ease;
 }
 
-#bluetooth.disconnected {
-	opacity: 0.5;
+/* The main container for the drawer */
+#group-sysmenu {
+    border-radius: 12px; 
+    transition: all 0.3s ease;
+    padding: 0 4px;
 }
 
-
-#network {
-	opacity: 1.0;
-	transition: opacity 0.2s ease;
+/* --- HIDE MENU ICON ON EXPAND --- */
+/* When the drawer is hovered/open, shrink and fade out the sliding bars */
+#group-sysmenu:hover #custom-sysmenu {
+    font-size: 0px;
+    padding: 0px;
+    margin: 0px;
+    opacity: 0;
 }
 
-#network.disconnected {
-	opacity: 0.5;
+/* --- ACTION BUTTON HOVER EFFECTS --- */
+/* Add a subtle glassy glow when hovering over the individual actions */
+#custom-lock:hover, #custom-reboot:hover, #custom-power:hover {
+    color: #cdd6f4;
+    opacity: 0.5;
+    /* text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.8); */
 }
 
-*/
+/* ============================================ */
