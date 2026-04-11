@@ -1,44 +1,49 @@
 * {
-	border: none;
-	border-radius: 0;
-	/* font-family: sans-serif; */
-	font-family: JetBrainsMono Nerd Font Mono;
-	font-size: 11pt;
-	font-weight: bold;
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11pt;
+    font-weight: bold;
 }
 
 /* glass bar */
-window#waybar {
-	/* this creates a 60% transparent dark tint */
-	background-color: rgba(17, 17, 27, 0.6);
-	color: #cdd6f4;
-	border-radius: 12px;
-	border: 1px solid rgba(205, 214, 244, 0.8);
+window#waybar.pinned {
+    /* this creates a 60% transparent dark tint */
+    background-color: rgba(17, 17, 27, 0.6);
+    color: #cdd6f4;
+    border-radius: 12px;
+    border: 1px solid rgba(205, 214, 244, 0.8);
 }
 
 #workspaces button {
-	color: #585b70; /* dimmed inactive dots */
-	background: transparent;
-	padding: 0 8px;
+    color: #585b70; /* dimmed inactive dots */
+    background: transparent;
+    padding: 0 8px;
 }
 
 #workspaces button.active {
-	color: #cdd6f4; /* bright active dot */
+    color: #cdd6f4; /* bright active dot */
 }
 
 #workspaces button:hover {
-	box-shadow: inherit;
-	text-shadow: inherit;
-	background: transparent;
+    box-shadow: inherit;
+    text-shadow: inherit;
+    background: transparent;
 }
 
 /* ============================================ */
 
 /* modules spacing */
-#clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery, #custom-barmode {
-	padding: 0 8px;
-	color: #cdd6f4;
+#clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery {
+    padding: 0 8px;
+    color: #cdd6f4;
 }
+
+#custom-barmodep {
+    padding: 0 12px;
+    color: #cdd6f4;
+}
+
 
 /* ============================================ */
 
@@ -68,7 +73,7 @@ window#waybar {
     font-family: "JetBrainsMono Nerd Font Mono", monospace;
     font-size: 16px;
     padding: 0 10px; /* Breathing room between the sliding buttons */
-    color: #cdd6f4; /* rgba(255, 255, 255, 0.8); Keep the default glassy text color */
+    color: #cdd6f4; 
     transition: all 0.3s ease;
 }
 
@@ -93,19 +98,28 @@ window#waybar {
 #custom-lock:hover, #custom-reboot:hover, #custom-power:hover {
     color: #cdd6f4;
     opacity: 0.5;
-    /* text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.8); */
 }
 
 /* ============================================ */
 
-#custom-barmode {
-    padding: 0 12px;
-    transition: all 0.3s ease;
-}
+/* FLOATING WINDOW CONFIG */
 
-#custom-barmode:hover {
+#custom-barmodef {
     color: #cdd6f4;
-    opacity: 0.5; 
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#custom-barmodef:hover {
+    color: #cdd6f4;
+    opacity: 1;
+}
+
+window#waybar.floating {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 /* ============================================ */
+

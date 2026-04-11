@@ -23,7 +23,7 @@
         "power-profiles-daemon",
         "backlight",
         "battery",
-	"custom/barmode"
+	"custom/barmodep"
     ],
 
 
@@ -32,7 +32,7 @@
 
     "mode": "dock",
     "exclusive": true, // Tells Hyprland to reserve space for the bar
-    "custom/barmode": {
+    "custom/barmodep": {
     "format": "<span size='100%'>󰐃</span>", // Solid Pin icon
     "on-click": "~/.config/waybar/toggle_bar.sh",
     "tooltip-format": "Mode: Pinned (Click to auto-hide)"
