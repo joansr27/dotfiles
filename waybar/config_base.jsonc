@@ -1,25 +1,26 @@
 // -*- mode: jsonc -*-
 {
-    "layer": "top",
-    "position": "top",
-    "height": 35,
-    //"width": 1100,
-    "spacing": 4,
-    "modules-left": [
-	"group/sysmenu",
-	"hyprland/workspaces"
-    ],
-    "modules-center": [
-	"clock"
-    ],
-    "modules-right": [
-	"network",
-	"bluetooth",
-        "pulseaudio",
-        "power-profiles-daemon",
-        "backlight",
-        "battery"
-    ],
+//    "layer": "top",
+//    "position": "top",
+//    "height": 35,
+//    "width": 1100,
+//    "spacing": 4,
+//    "modules-left": [
+//	"group/sysmenu",
+//	"hyprland/workspaces"
+    //],
+    //"modules-center": [
+//	"clock"
+    //],
+    //"modules-right": [
+//	"network",
+//	"bluetooth",
+//        "pulseaudio",
+//        "power-profiles-daemon",
+//        "backlight",
+//        "battery",
+//	"custom/barmode"
+    //],
 
 // =====================================
 

@@ -1,0 +1,40 @@
+{
+    "name": "pinned",
+    "include": ["~/.config/waybar/config_base.jsonc"],
+
+// ====================================
+
+    "layer": "top",
+    "position": "top",
+    "height": 35,
+    "width": 1100,
+    "spacing": 4,
+    "modules-left": [
+	"group/sysmenu",
+	"hyprland/workspaces"
+    ],
+    "modules-center": [
+	"clock"
+    ],
+    "modules-right": [
+	"network",
+	"bluetooth",
+        "pulseaudio",
+        "power-profiles-daemon",
+        "backlight",
+        "battery",
+	"custom/barmode"
+    ],
+
+
+// ====================================
+
+
+    "mode": "dock",
+    "exclusive": true, // Tells Hyprland to reserve space for the bar
+    "custom/barmode": {
+    "format": "<span size='100%'>󰐃</span>", // Solid Pin icon
+    "on-click": "~/.config/waybar/toggle_bar.sh",
+    "tooltip-format": "Mode: Pinned (Click to auto-hide)"
+    }
+}
