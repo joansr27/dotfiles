@@ -95,6 +95,7 @@
         "modules": [
             "custom/sysmenu",  // Sliding bars icon (always visible)
             "custom/lock",     // Lock button
+	    "custom/exit",	// Exit hyprland button
             "custom/reboot",   // Restart button
             "custom/power"     // Shutdown button
         ]
@@ -105,9 +106,15 @@
     },
     "custom/lock": {
         "format": "<span size='120%'>&#xf0341;</span>",
-        "on-click": "hyprctl dispatch exit", // Standard systemd lock command
+        "on-click": "hyprlock", // Standard systemd lock command
         "tooltip-format": "Lock"
     },
+    "custom/exit": {
+        "format": "<span size='130%'>&#xf08b;</span>",
+        "on-click": "hyprctl dispatch exit", // Standard systemd lock command
+        "tooltip-format": "Exit"
+    },
+
     "custom/reboot": {
         "format": "<span size='130%'>\uf021</span>", // Sync/Refresh icon
         "on-click": "systemctl reboot",

@@ -11,8 +11,8 @@ window#waybar.pinned {
     /* this creates a 60% transparent dark tint */
     background-color: rgba(17, 17, 27, 0.6);
     color: #cdd6f4;
-    border-radius: 12px;
-    border: 1px solid rgba(205, 214, 244, 0.8);
+    /* border-radius: 12px;
+    border: 1px solid rgba(205, 214, 244, 0.8); */
 }
 
 #workspaces button {
@@ -69,7 +69,7 @@ window#waybar.pinned {
 /* ============================================ */
 
 /* --- SYSTEM MENU DRAWER BASE --- */
-#custom-sysmenu, #custom-lock, #custom-reboot, #custom-power {
+#custom-sysmenu, #custom-lock, #custom-exit, #custom-reboot, #custom-power {
     font-family: "JetBrainsMono Nerd Font Mono", monospace;
     font-size: 16px;
     padding: 0 10px; /* Breathing room between the sliding buttons */
@@ -95,7 +95,7 @@ window#waybar.pinned {
 
 /* --- ACTION BUTTON HOVER EFFECTS --- */
 /* Add a subtle glassy glow when hovering over the individual actions */
-#custom-lock:hover, #custom-reboot:hover, #custom-power:hover {
+#custom-lock:hover, #custom-exit:hover, #custom-reboot:hover, #custom-power:hover {
     color: #cdd6f4;
     opacity: 0.5;
 }

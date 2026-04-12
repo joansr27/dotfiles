@@ -22,6 +22,7 @@ grim
 gst-plugin-pipewire
 htop
 hyprland
+hyprlock
 intel-media-driver
 kitty
 libpulse
