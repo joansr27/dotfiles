@@ -1,6 +1,6 @@
 {
     "name": "pinned",
-    "include": ["~/.config/waybar/config_base.jsonc"],
+    "include": ["~/dotfiles/waybar/config_base.jsonc"],
 
 // ====================================
 

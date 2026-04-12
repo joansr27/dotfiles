@@ -95,6 +95,7 @@
         "modules": [
             "custom/sysmenu",  // Sliding bars icon (always visible)
             "custom/lock",     // Lock button
+	    "custom/sleep",
 	    "custom/exit",	// Exit hyprland button
             "custom/reboot",   // Restart button
             "custom/power"     // Shutdown button
@@ -109,10 +110,15 @@
         "on-click": "hyprlock", // Standard systemd lock command
         "tooltip-format": "Lock"
     },
+    "custom/sleep": {
+        "format": "<span size='110%'>&#xf0904;</span>", 
+        "on-click": "hyprlock & sleep 1 && systemctl suspend", 
+        "tooltip-format": "Suspend"
+    },
     "custom/exit": {
         "format": "<span size='130%'>&#xf08b;</span>",
         "on-click": "hyprctl dispatch exit", // Standard systemd lock command
-        "tooltip-format": "Exit"
+        "tooltip-format": "Exit Hyprland"
     },
 
     "custom/reboot": {
