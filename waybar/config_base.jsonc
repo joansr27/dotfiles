@@ -130,8 +130,21 @@
         "format": "<span size='130%'>\uf011</span>", // Power button icon
         "on-click": "systemctl poweroff",
         "tooltip-format": "Shutdown"
-    }
+    },
 
 // ============================
+
+    "custom/nightlight": {
+        "format": "{icon}",
+        "return-type": "json",
+        "exec": "pgrep -x wlsunset >/dev/null && echo '{\"alt\": \"active\", \"tooltip\": \"Night Shift: ON\"}' || echo '{\"alt\": \"default\", \"tooltip\": \"Night Shift: OFF\"}'",
+        "interval": "once",
+        "signal": 12,
+        "on-click": "~/dotfiles/waybar/nightlight_toggle.sh",
+        "format-icons": {
+            "active": "<span size='130%'>󰖔</span>",
+            "default": "<span size='130%'>󰖙</span>"
+        }
+    }
 
 }

@@ -11,8 +11,8 @@ window#waybar.pinned {
     /* this creates a 60% transparent dark tint */
     background-color: rgba(17, 17, 27, 0.6);
     color: #cdd6f4;
-    /* border-radius: 12px;
-    border: 1px solid rgba(205, 214, 244, 0.8); */
+    border-radius: 12px;
+    border: 1px solid rgba(205, 214, 244, 0.8);
 }
 
 #workspaces button {
@@ -34,7 +34,7 @@ window#waybar.pinned {
 /* ============================================ */
 
 /* modules spacing */
-#clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery {
+#clock, #custom-nightlight, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery {
     padding: 0 8px;
     color: #cdd6f4;
 }

@@ -64,6 +64,7 @@ waybar
 wget
 wireplumber
 wl-clipboard
+wlsunset
 wofi
 wpa_supplicant
 xdg-desktop-portal-hyprland
