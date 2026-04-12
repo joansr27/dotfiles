@@ -1,4 +1,5 @@
 amd-ucode
+apple-fonts
 base
 base-devel
 blueman
@@ -23,6 +24,7 @@ gst-plugin-pipewire
 htop
 hyprland
 hyprlock
+imv
 intel-media-driver
 kitty
 libpulse
