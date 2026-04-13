@@ -6,120 +6,105 @@
     font-weight: bold;
 }
 
-/* glass bar */
-window#waybar.pinned {
-    /* this creates a 60% transparent dark tint */
-    background-color: rgba(17, 17, 27, 0.6);
-    color: #cdd6f4;
-    border-radius: 12px;
-    border: 1px solid rgba(205, 214, 244, 0.8);
-}
-
-#workspaces button {
-    color: #585b70; /* dimmed inactive dots */
-    background: transparent;
-    padding: 0 8px;
-}
-
-#workspaces button.active {
-    color: #cdd6f4; /* bright active dot */
-}
-
-#workspaces button:hover {
-    box-shadow: inherit;
-    text-shadow: inherit;
+window#waybar.pinned, 
+window#waybar.floating {
     background: transparent;
 }
 
-/* ============================================ */
-
-/* modules spacing */
-#clock, #custom-nightlight, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery {
-    padding: 0 8px;
-    color: #cdd6f4;
+window#waybar.pinned .modules-right {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 2px 14px; 
 }
 
-#custom-barmodep {
-    padding: 0 12px;
-    color: #cdd6f4;
+window#waybar.pinned .modules-left, 
+window#waybar.pinned .modules-center {
+    background-color: #1E1E1E;
+    border-radius: 24px;
+    padding: 2px 14px;
+    margin-top: 8px;
+    border: 1px solid #2D2D2D;
 }
 
+window#waybar.pinned .modules-right > widget {
+    background-color: #1E1E1E;
+    border-radius: 24px;
+    border: 1px solid #2D2D2D;
+    margin-left: 6px;
+}
 
-/* ============================================ */
+/* ------------------------------------------------- */
 
-#network {
+
+window#waybar.floating .modules-left, 
+window#waybar.floating .modules-center
+window#waybar.floating .modules-right {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+#clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery, #custom-barmodef, #workspaces button {
+    background: transparent;
+    color: #E8E8E8;
+    box-shadow: none;
+    padding: 0 10px;
+}
+
+#custom-sysmenu, #custom-lock, #custom-sleep, #custom-exit, #custom-reboot, #custom-power,#custom-nightlight, #custom-barmodep {
+    background: transparent;
+    color: #E8E8E8;
+    box-shadow: none;
+    padding: 0 10px;
+    transition: all 0.3s ease;
+}
+
+/* === WIFI AND BLUETOOTH === */
+
+#network, 
+#bluetooth.connected {
     opacity: 1.0; 
 }
 
-#network.disabled,
-#network.disconnected {
-    opacity: 0.5;
-}
-
-#bluetooth.connected {
-    opacity: 1.0;
-}
-
+#network.disabled, 
+#network.disconnected, 
 #bluetooth.on, 
 #bluetooth.off, 
 #bluetooth.disabled {
     opacity: 0.5;
 }
 
-/* ============================================ */
+/* ========================= */
 
-/* --- SYSTEM MENU DRAWER BASE --- */
-#custom-sysmenu, #custom-lock, #custom-sleep, #custom-exit, #custom-reboot, #custom-power {
-    font-family: "JetBrainsMono Nerd Font Mono", monospace;
-    font-size: 16px;
-    padding: 0 10px; /* Breathing room between the sliding buttons */
-    color: #cdd6f4; 
-    transition: all 0.3s ease;
-}
-
-/* The main container for the drawer */
 #group-sysmenu {
     border-radius: 12px; 
     transition: all 0.3s ease;
     padding: 0 4px;
 }
 
-/* --- HIDE MENU ICON ON EXPAND --- */
-/* When the drawer is hovered/open, shrink and fade out the sliding bars */
 #group-sysmenu:hover #custom-sysmenu {
     font-size: 0px;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     opacity: 0;
 }
 
-/* --- ACTION BUTTON HOVER EFFECTS --- */
-/* Add a subtle glassy glow when hovering over the individual actions */
-#custom-lock:hover, #custom-sleep:hover, #custom-exit:hover, #custom-reboot:hover, #custom-power:hover {
-    color: #cdd6f4;
+#custom-lock:hover, #custom-sleep:hover, #custom-exit:hover, #custom-reboot:hover, #custom-power:hover, #custom-nightlight:hover, #custom-barmodep:hover {
     opacity: 0.5;
 }
 
-/* ============================================ */
-
-/* FLOATING WINDOW CONFIG */
+/* === UNPINNED BAR === */
 
 #custom-barmodef {
-    color: #cdd6f4;
+    color: #1E1E1E;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 #custom-barmodef:hover {
-    color: #cdd6f4;
     opacity: 1;
 }
 
-window#waybar.floating {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-/* ============================================ */
+/* ========================= */
 

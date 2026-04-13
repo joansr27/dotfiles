@@ -22,15 +22,44 @@
 //	"custom/barmode"
     //],
 
+    // === GROUPS ===
+    "group/batteries": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "power-profiles-daemon",
+            "backlight",
+	    "battery"
+	]
+    },
+    "group/connections": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "network",
+	    "bluetooth"
+	]
+    },
+    "group/pin": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "custom/barmodep"
+	]
+    },
+
 // =====================================
 
     "hyprland/workspaces": {
-	"format": "{icon}",
-	"format-icons": {
-	    "active": "",
-	    "default": ""
-	},
-	"disable-scroll": true
+        "format": "{icon}",
+        "format-icons": {
+            "default": "",
+            "active": ""
+        },
+        "disable-scroll": true,
+        "persistent-workspaces": {
+            "*": [1, 2, 3, 4, 5]
+        }
     },
 
     "clock": {

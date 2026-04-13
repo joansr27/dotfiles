@@ -24,6 +24,7 @@ gst-plugin-pipewire
 htop
 hyprland
 hyprlock
+hyprpaper
 imv
 intel-media-driver
 kitty
