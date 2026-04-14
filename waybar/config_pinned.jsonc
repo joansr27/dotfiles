@@ -6,26 +6,26 @@
 
     "layer": "top",
     "position": "top",
-    "height": 48,
+    "height": 36,
     //"width": 1100,
     "spacing": 4,
     "margin-left": 12,
     "margin-right": 12,
-    "margin-top": 0,
-
+    "margin-top": 10,
+    "margin-bottom": 10,
+    
 
     "modules-left": [
-	"group/sysmenu",
-	"hyprland/workspaces"
+	"group/power-menu",
+	"group/workspace-dock"
     ],
     "modules-center": [
-	"clock",
-	"custom/nightlight"	
+	"group/time-date"
     ],
 
 
     "modules-right": [
-	"pulseaudio",
+	"group/sound",
 	"group/connections",
 	"group/batteries",
 	"group/pin"
@@ -36,10 +36,5 @@
 
 
     "mode": "dock",
-    "exclusive": true, // Tells Hyprland to reserve space for the bar
-    "custom/barmodep": {
-    "format": "<span size='100%'>󰐃</span>", // Solid Pin icon
-    "on-click": "~/.config/waybar/toggle_bar.sh",
-    "tooltip-format": "Mode: Pinned (Click to auto-hide)"
-    }
+    "exclusive": true // Tells Hyprland to reserve space for the bar
 }

@@ -1,26 +1,5 @@
 // -*- mode: jsonc -*-
 {
-//    "layer": "top",
-//    "position": "top",
-//    "height": 35,
-//    "width": 1100,
-//    "spacing": 4,
-//    "modules-left": [
-//	"group/sysmenu",
-//	"hyprland/workspaces"
-    //],
-    //"modules-center": [
-//	"clock"
-    //],
-    //"modules-right": [
-//	"network",
-//	"bluetooth",
-//        "pulseaudio",
-//        "power-profiles-daemon",
-//        "backlight",
-//        "battery",
-//	"custom/barmode"
-    //],
 
     // === GROUPS ===
     "group/batteries": {
@@ -45,6 +24,35 @@
 	"class": "bubble",
         "modules": [
             "custom/barmodep"
+	]
+    },
+    "group/workspace-dock": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+	    "hyprland/workspaces"
+	]
+    },
+    "group/power-menu": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "group/sysmenu"
+	]
+    },
+    "group/time-date": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "clock",
+	    "custom/nightlight"
+	]
+    },
+    "group/sound": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+	    "pulseaudio"
 	]
     },
 
@@ -174,6 +182,13 @@
             "active": "<span size='130%'>󰖔</span>",
             "default": "<span size='130%'>󰖙</span>"
         }
+    },
+
+    "custom/barmodep": {
+        "format": "<span size='100%'>󰐃</span>", // Solid Pin icon
+        "on-click": "~/dotfiles/waybar/toggle_bar.sh",
+        "tooltip-format": "Mode: Pinned (Click to auto-hide)"
     }
+    
 
 }

@@ -6,31 +6,21 @@
     font-weight: bold;
 }
 
-window#waybar.pinned, 
-window#waybar.floating {
+window#waybar {
     background: transparent;
 }
 
-window#waybar.pinned .modules-right {
-    margin-top: 8px;
-    margin-bottom: 8px;
-    padding: 2px 14px; 
-}
-
-window#waybar.pinned .modules-left, 
-window#waybar.pinned .modules-center {
+#power-menu,
+#workspace-dock,
+#time-date,
+#sound,
+#connections,
+#batteries,
+#pin {
     background-color: #1E1E1E;
-    border-radius: 24px;
-    padding: 2px 14px;
-    margin-top: 8px;
+    border-radius: 18px;
+    padding: 0px 14px;
     border: 1px solid #2D2D2D;
-}
-
-window#waybar.pinned .modules-right > widget {
-    background-color: #1E1E1E;
-    border-radius: 24px;
-    border: 1px solid #2D2D2D;
-    margin-left: 6px;
 }
 
 /* ------------------------------------------------- */
@@ -44,6 +34,9 @@ window#waybar.floating .modules-right {
     padding: 0;
     margin: 0;
 }
+
+/* ------------------------------------------------- */
+
 
 #clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery, #custom-barmodef, #workspaces button {
     background: transparent;
@@ -108,3 +101,15 @@ window#waybar.floating .modules-right {
 
 /* ========================= */
 
+tooltip {
+    background: alpha(#1E1E1E, 0.95);
+    border: 1px solid #2D2D2D;
+    border-radius: 10px;
+    /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); */
+}
+
+tooltip label {
+    padding: 4px 8px;
+    color: #E8E8E8;
+    font-size: 11px;
+}
