@@ -1,7 +1,25 @@
-show = drun
-allow_images = true
-image_size = 25
-halign = center
-content_halign = center
-width = 30%
-height = 30%
+# show = drun
+# allow_images = true
+# image_size = 25
+# halign = center
+# content_halign = center
+# width = 30%
+# height = 30%
+
+# === WOFI CONFIGURATION ===
+
+show=drun
+prompt=Search Applications...
+term=kitty
+
+location=center
+width=35%
+lines=8
+yoffset=0
+
+allow_images=true
+image_size=28
+hide_scroll=true
+no_actions=true
+
+normal_window=true

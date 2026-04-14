@@ -10,8 +10,6 @@ window#waybar {
     background: transparent;
 }
 
-#power-menu,
-#workspace-dock,
 #time-date,
 #sound,
 #connections,
@@ -21,6 +19,16 @@ window#waybar {
     border-radius: 18px;
     padding: 0px 14px;
     border: 1px solid #2D2D2D;
+    margin-left: 5px;
+}
+
+#power-menu,
+#workspace-dock {
+    background-color: #1E1E1E;
+    border-radius: 18px;
+    padding: 0px 14px;
+    border: 1px solid #2D2D2D;
+    margin-right: 5px;
 }
 
 /* ------------------------------------------------- */
