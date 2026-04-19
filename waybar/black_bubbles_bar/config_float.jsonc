@@ -1,0 +1,30 @@
+{
+    "name": "floating",
+    "include": ["~/dotfiles/waybar/config_base.jsonc"],
+
+// =========================================
+
+    "layer": "top",
+    "position": "top",
+    "height": 50,
+    "width": 50,
+    "spacing": 4,
+    "modules-left": [
+    ],
+    "modules-center": [
+	"custom/barmodef"
+    ],
+    "modules-right": [
+    ],
+
+// =========================================
+
+    "exclusive": false,
+    "mode": "hide",
+    "modifier-reset": "release",
+    "custom/barmodef": {
+        "format": "<span size='200%'>󰤱</span>",
+        "on-click": "~/.config/waybar/toggle_bar.sh",
+        "tooltip-format": "Mode: Floating (Click to pin)"
+    }
+}

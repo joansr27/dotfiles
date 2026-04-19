@@ -1,21 +1,13 @@
-@define-color background    rgba(35, 35, 35, 1.0);
-@define-color bubble        rgba(60, 60, 60, 1.0);
-@define-color contour       #ededed; 
-@define-color text          rgba(230, 230, 230, 1.0);
-
 * {
     border: none;
     border-radius: 0;
     font-family: "JetBrainsMono Nerd Font Mono", monospace;
-    /* font-family: "SF Pro Display"; */
-    font-size: 8pt;
+    font-size: 11pt;
     font-weight: bold;
-    color: @text;
 }
 
 window#waybar {
-	background-color: @background;
-	border-bottom: 2px solid @contour;
+    background: transparent;
 }
 
 #time-date,
@@ -23,24 +15,20 @@ window#waybar {
 #connections,
 #batteries,
 #pin {
-    background-color: @bubble;
-    border-radius: 10px;
-    padding: 0px 5px;
-    border: 1px solid @contour;
-    margin-right: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    background-color: #1E1E1E;
+    border-radius: 18px;
+    padding: 0px 14px;
+    border: 1px solid #2D2D2D;
+    margin-left: 5px;
 }
 
 #power-menu,
 #workspace-dock {
-    background-color: @bubble;
-    border-radius: 10px;
-    padding: 0px 5px;
-    border: 1px solid @contour;
-    margin-left: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    background-color: #1E1E1E;
+    border-radius: 18px;
+    padding: 0px 14px;
+    border: 1px solid #2D2D2D;
+    margin-right: 5px;
 }
 
 /* ------------------------------------------------- */
@@ -52,7 +40,7 @@ window#waybar.floating .modules-right {
     background: transparent;
     border: none;
     padding: 0;
-    margin: 0; 
+    margin: 0;
 }
 
 /* ------------------------------------------------- */
@@ -60,21 +48,17 @@ window#waybar.floating .modules-right {
 
 #clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery, #custom-barmodef, #workspaces button {
     background: transparent;
+    color: #E8E8E8;
     box-shadow: none;
     padding: 0 10px;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
 }
 
 #custom-sysmenu, #custom-lock, #custom-sleep, #custom-exit, #custom-reboot, #custom-power,#custom-nightlight, #custom-barmodep {
     background: transparent;
+    color: #E8E8E8;
     box-shadow: none;
     padding: 0 10px;
     transition: all 0.3s ease;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
 }
 
 /* === WIFI AND BLUETOOTH === */
@@ -98,9 +82,6 @@ window#waybar.floating .modules-right {
     border-radius: 12px; 
     transition: all 0.3s ease;
     padding: 0 4px;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
 }
 
 #group-sysmenu:hover #custom-sysmenu {
@@ -117,6 +98,7 @@ window#waybar.floating .modules-right {
 /* === UNPINNED BAR === */
 
 #custom-barmodef {
+    color: #1E1E1E;
     opacity: 0;
     transition: opacity 0.3s ease;
 }

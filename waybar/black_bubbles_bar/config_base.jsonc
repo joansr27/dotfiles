@@ -1,0 +1,194 @@
+// -*- mode: jsonc -*-
+{
+
+    // === GROUPS ===
+    "group/batteries": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "power-profiles-daemon",
+            "backlight",
+	    "battery"
+	]
+    },
+    "group/connections": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "network",
+	    "bluetooth"
+	]
+    },
+    "group/pin": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "custom/barmodep"
+	]
+    },
+    "group/workspace-dock": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+	    "hyprland/workspaces"
+	]
+    },
+    "group/power-menu": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "group/sysmenu"
+	]
+    },
+    "group/time-date": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+            "clock",
+	    "custom/nightlight"
+	]
+    },
+    "group/sound": {
+        "orientation": "inherit",
+	"class": "bubble",
+        "modules": [
+	    "pulseaudio"
+	]
+    },
+
+// =====================================
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "default": "",
+            "active": ""
+        },
+        "disable-scroll": true,
+        "persistent-workspaces": {
+            "*": [1, 2, 3, 4, 5]
+        }
+    },
+
+    "clock": {
+	"format": "{:%H:%M   %A, %b %d}"
+    },
+
+    "network": {
+        "format-wifi": "<span size='160%'>\uf1eb</span>",
+        "format-disconnected": "<span size='160%'>\uf1eb</span>",
+	"format-disabled": "<span size='160%'>&#xf092d;</span>",
+        "format-ethernet": "<span size='160%'>\uf796</span>"
+    },
+
+    "bluetooth": {
+        "format-connected": "<span size='120%'>\uf294</span>",
+        "format-on": "<span size='120%'>\uf294</span>",
+	"format-off": "<span size='130%'>&#xf00b2;</span>",
+        "format-disabled": "<span size='130%'>&#xf00b2;</span>"
+    },
+
+    "backlight": {
+        "device": "acpi_video1",
+	"format": "<span size='120%'>{icon}</span>",
+        "format-icons": ["", "", "", "", "", "", "", "", ""]
+    },
+
+    "battery": {
+        "format": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span>",
+        "format-icons": ["", "", "", "", ""]
+    },
+    
+    "power-profiles-daemon": {
+      "format": "<span size='130%'>{icon}</span>",
+      "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+      "tooltip": true,
+      "format-icons": {
+        "default": "\uf24e",
+        "performance": "\uf135",
+        "balanced": "\uf219",
+        "power-saver": "\uf06c"
+      }
+    },
+    
+    "pulseaudio": {
+        "format": "<span rise='3000'>{volume}%</span> <span size='160%'>{icon}</span>",
+        "format-icons": {
+            "headphone": "",
+	    "default": ["", "", ""]
+        }
+    },
+
+// ============================
+
+// --- SYSTEM MENU (INLINE DRAWER) ---
+    "group/sysmenu": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,        // Smooth sliding animation
+            "children-class": "sysmenu-child",
+            "transition-left-to-right": false  // Slides open right-to-left
+    	},
+        "modules": [
+            "custom/sysmenu",  // Sliding bars icon (always visible)
+            "custom/lock",     // Lock button
+	    "custom/sleep",
+	    "custom/exit",	// Exit hyprland button
+            "custom/reboot",   // Restart button
+            "custom/power"     // Shutdown button
+        ]
+    },
+    "custom/sysmenu": {
+        "format": "<span size='130%'>\uf0c9</span>",
+        "tooltip": false
+    },
+    "custom/lock": {
+        "format": "<span size='120%'>&#xf0341;</span>",
+        "on-click": "hyprlock", // Standard systemd lock command
+        "tooltip-format": "Lock"
+    },
+    "custom/sleep": {
+        "format": "<span size='110%'>&#xf0904;</span>", 
+        "on-click": "hyprlock & sleep 1 && systemctl suspend", 
+        "tooltip-format": "Suspend"
+    },
+    "custom/exit": {
+        "format": "<span size='130%'>&#xf08b;</span>",
+        "on-click": "hyprctl dispatch exit", // Standard systemd lock command
+        "tooltip-format": "Exit Hyprland"
+    },
+
+    "custom/reboot": {
+        "format": "<span size='130%'>\uf021</span>", // Sync/Refresh icon
+        "on-click": "systemctl reboot",
+        "tooltip-format": "Restart"
+    },
+    "custom/power": {
+        "format": "<span size='130%'>\uf011</span>", // Power button icon
+        "on-click": "systemctl poweroff",
+        "tooltip-format": "Shutdown"
+    },
+
+// ============================
+
+    "custom/nightlight": {
+        "format": "{icon}",
+        "return-type": "json",
+        "exec": "pgrep -x wlsunset >/dev/null && echo '{\"alt\": \"active\", \"tooltip\": \"Night Shift: ON\"}' || echo '{\"alt\": \"default\", \"tooltip\": \"Night Shift: OFF\"}'",
+        "interval": "once",
+        "signal": 12,
+        "on-click": "~/dotfiles/waybar/nightlight_toggle.sh",
+        "format-icons": {
+            "active": "<span size='130%'>󰖔</span>",
+            "default": "<span size='130%'>󰖙</span>"
+        }
+    },
+
+    "custom/barmodep": {
+        "format": "<span size='100%'>󰐃</span>", // Solid Pin icon
+        "on-click": "~/dotfiles/waybar/toggle_bar.sh",
+        "tooltip-format": "Mode: Pinned (Click to auto-hide)"
+    }
+    
+
+}
