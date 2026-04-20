@@ -1,7 +1,12 @@
-@define-color background    rgba(35, 35, 35, 1.0);
+/* @define-color background    rgba(35, 35, 35, 1.0);
 @define-color bubble        rgba(60, 60, 60, 1.0);
 @define-color contour       #ededed; 
-@define-color text          rgba(230, 230, 230, 1.0);
+@define-color text          rgba(230, 230, 230, 1.0); */
+
+@define-color background    rgba(245, 240, 236, 0.0);
+@define-color bubble        rgba(230, 220, 211, 1.0);
+@define-color contour       rgba(205, 190, 178, 1.0);
+@define-color text          rgba(92, 75, 65, 1.0);
 
 * {
     border: none;
@@ -13,9 +18,10 @@
     color: @text;
 }
 
-window#waybar {
+window#waybar.pinned {
 	background-color: @background;
-	border-bottom: 2px solid @contour;
+	border-radius: 10px;
+	/* border-bottom: 2px solid @contour; */
 }
 
 #time-date,
@@ -24,9 +30,9 @@ window#waybar {
 #batteries,
 #pin {
     background-color: @bubble;
-    border-radius: 10px;
+    border-radius: 100px;
     padding: 0px 5px;
-    border: 1px solid @contour;
+    /* border: 1px solid @contour; */
     margin-right: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
@@ -35,16 +41,20 @@ window#waybar {
 #power-menu,
 #workspace-dock {
     background-color: @bubble;
-    border-radius: 10px;
+    border-radius: 100px;
     padding: 0px 5px;
-    border: 1px solid @contour;
+    /* border: 1px solid @contour; */
     margin-left: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
+
 /* ------------------------------------------------- */
 
+window#waybar.floating {
+	background-color: transparent;
+}
 
 window#waybar.floating .modules-left, 
 window#waybar.floating .modules-center
@@ -122,7 +132,9 @@ window#waybar.floating .modules-right {
 }
 
 #custom-barmodef:hover {
-    opacity: 1;
+    opacity: 0.9;
+    background: @bubble;
+    border-radius: 10px;
 }
 
 /* ========================= */

@@ -9,6 +9,7 @@
     "height": 50,
     "width": 50,
     "spacing": 4,
+    "margin-top": 10,
     "modules-left": [
     ],
     "modules-center": [
