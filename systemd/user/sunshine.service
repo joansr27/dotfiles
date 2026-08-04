@@ -1,0 +1,17 @@
+[Unit]
+Description=Sunshine self-hosted game stream host for Moonlight
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+ExecStart=/usr/bin/sunshine
+Restart=on-failure
+RestartSec=5s
+# These lines ensure Sunshine sees your display session
+Environment=DISPLAY=:0
+Environment=WAYLAND_DISPLAY=wayland-1
+# Some systems require these to access the GPU
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+[Install]
+WantedBy=graphical-session.target
