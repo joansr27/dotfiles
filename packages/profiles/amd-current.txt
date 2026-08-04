@@ -1,0 +1,12 @@
+common/00-base.txt
+common/01-network-security.txt
+common/02-audio-media.txt
+common/03-hyprland.txt
+common/04-bluetooth.txt
+common/05-cli.txt
+common/06-storage-filesystems.txt
+common/07-applications.txt
+common/08-printing.txt
+common/09-power-maintenance.txt
+common/10-fonts.txt
+hardware/amd-laptop.txt

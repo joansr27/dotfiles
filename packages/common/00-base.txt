@@ -1,0 +1,11 @@
+base
+base-devel
+linux
+linux-firmware
+linux-lts
+sudo
+efibootmgr
+btrfs-progs
+zram-generator
+smartmontools
+cronie

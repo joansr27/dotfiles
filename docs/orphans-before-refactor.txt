@@ -1,0 +1,8 @@
+go
+httpdirfs-debug
+libliftoff
+matlab-mpm-debug
+qt5-3d-debug
+sioyek-debug
+sunshine-bin-debug
+yay-debug

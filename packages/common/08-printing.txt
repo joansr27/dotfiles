@@ -1,0 +1,4 @@
+cups
+cups-pdf
+cups-pk-helper
+system-config-printer

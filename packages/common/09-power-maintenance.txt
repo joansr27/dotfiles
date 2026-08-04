@@ -1,0 +1,4 @@
+power-profiles-daemon
+timeshift
+pacman-contrib
+reflector

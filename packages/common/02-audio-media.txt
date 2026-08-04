@@ -1,0 +1,9 @@
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+wireplumber
+gst-plugin-pipewire
+pavucontrol
+playerctl
+sof-firmware

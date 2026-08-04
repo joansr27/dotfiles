@@ -1,0 +1,16 @@
+bat
+btop
+eza
+fastfetch
+fd
+fzf
+git
+github-cli
+htop
+jq
+less
+lm_sensors
+ripgrep
+stow
+tree
+unzip
