@@ -9,4 +9,6 @@ common/07-applications.txt
 common/08-printing.txt
 common/09-power-maintenance.txt
 common/10-fonts.txt
+features/remote-access.txt
+features/science-development.txt
 hardware/amd-laptop.txt

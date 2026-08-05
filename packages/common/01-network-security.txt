@@ -1,7 +1,7 @@
+firewalld
+gnupg
 networkmanager
 network-manager-applet
-wpa_supplicant
-firewalld
 openssh
-gnupg
 wget
+wpa_supplicant

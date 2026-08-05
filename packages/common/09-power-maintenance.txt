@@ -1,4 +1,4 @@
-power-profiles-daemon
-timeshift
 pacman-contrib
+power-profiles-daemon
 reflector
+timeshift

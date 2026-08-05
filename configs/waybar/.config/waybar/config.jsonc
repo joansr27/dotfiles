@@ -130,7 +130,6 @@
     // =========================================================
 
     "backlight": {
-        "device": "acpi_video1",
         "format": "<span size='120%'>{icon}</span>",
         "format-icons": [
             "",

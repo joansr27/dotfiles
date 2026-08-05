@@ -14,3 +14,6 @@
 # User caches and Trash
 .cache/
 .local/share/Trash/
+
+# Local machine selection
+/configs/hypr/.config/hypr/machine.conf

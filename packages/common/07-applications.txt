@@ -1,7 +1,8 @@
 dolphin
+gimp
 imv
 kitty
+libreoffice-fresh
 nano
 neovim
-zathura
-zathura-pdf-mupdf
+okular

@@ -38,6 +38,7 @@ check_path "$HOME/.config/user-dirs.dirs"
 check_command hyprctl
 check_command waybar
 check_command kitty
+check_command okular
 check_command nvim
 check_command wofi
 check_command xdg-user-dir

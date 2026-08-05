@@ -1,11 +1,11 @@
 base
 base-devel
+btrfs-progs
+cronie
+efibootmgr
 linux
 linux-firmware
 linux-lts
-sudo
-efibootmgr
-btrfs-progs
-zram-generator
 smartmontools
-cronie
+sudo
+zram-generator

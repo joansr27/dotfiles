@@ -1,0 +1,10 @@
+dmidecode
+lshw
+python-astropy
+python-matplotlib
+python-numpy
+python-pandas
+python-pip
+python-scipy
+tk
+vulkan-tools

@@ -1,6 +1,6 @@
-udisks2
-udiskie
+dosfstools
+exfatprogs
 gvfs
 ntfs-3g
-exfatprogs
-dosfstools
+udiskie
+udisks2
