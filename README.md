@@ -1270,6 +1270,225 @@ deliberate and coordinated.
 
 ---
 
+### Choosing between a direct commit and a branch
+
+Not every change requires a dedicated branch.
+
+Small, isolated, easily reversible changes may be committed directly to
+`main` after they have been tested. Examples include:
+
+- changing a wallpaper;
+- adjusting a timeout;
+- modifying a color, margin, font size, or opacity;
+- correcting a comment or documentation typo;
+- changing a small number of configuration lines;
+- making a minor keybinding adjustment.
+
+Use a separate branch when a change:
+
+- modifies package manifests or installation scripts;
+- affects several applications or machines;
+- changes hardware, graphics, monitor, boot, or service configuration;
+- changes Stow structure or symbolic links;
+- changes remote-access or security behavior;
+- could prevent Hyprland from starting correctly;
+- is difficult to reverse;
+- requires several commits;
+- needs experimentation or comparison before acceptance.
+
+The important distinction is risk and scope, not the number of changed lines.
+
+### Small change directly on `main`
+
+First update the local branch:
+
+```bash
+cd "$HOME/dotfiles"
+
+git switch main
+git pull --ff-only
+git status
+```
+
+Make and test the change.
+
+Examples:
+
+```bash
+hyprctl reload
+hyprctl configerrors
+```
+
+or:
+
+```bash
+pkill waybar
+
+waybar \
+    -c "$HOME/.config/waybar/config.jsonc" \
+    -s "$HOME/.config/waybar/style.css"
+```
+
+Inspect the change:
+
+```bash
+git status --short
+git diff --check
+git diff
+```
+
+Prefer staging only the intended files:
+
+```bash
+git add \
+    configs/hypr/.config/hypr/hyprpaper.conf \
+    wallpapers/new-wallpaper.jpg
+```
+
+Using this is also acceptable from the repository root:
+
+```bash
+git add .
+```
+
+but only after checking `git status`, because it stages all changes and
+untracked files below the current directory.
+
+Inspect the exact commit contents:
+
+```bash
+git diff --cached --check
+git diff --cached --stat
+git diff --cached
+```
+
+Commit and push:
+
+```bash
+git commit -m "config: update desktop wallpaper"
+git push
+```
+
+Do not push directly to `main` when the change has not been tested or when the
+working tree contains unrelated modifications.
+
+### Substantial change through a branch
+
+Start from an updated `main`:
+
+```bash
+cd "$HOME/dotfiles"
+
+git switch main
+git pull --ff-only
+git status
+
+git switch -c feature/descriptive-change
+```
+
+Make, test, commit, and publish the change:
+
+```bash
+git add path/to/changed/files
+
+git diff --cached --check
+git diff --cached
+
+git commit -m "feat: describe the change"
+git push -u origin HEAD
+```
+
+### Merging a tested branch into `main`
+
+Before merging, ensure the feature branch has a clean working tree:
+
+```bash
+git status
+```
+
+Update the remote copy of the branch:
+
+```bash
+git push
+```
+
+Switch to `main` and update it:
+
+```bash
+git switch main
+git pull --ff-only
+```
+
+Merge the branch:
+
+```bash
+git merge --no-ff feature/descriptive-change
+```
+
+`--no-ff` creates an explicit merge commit and preserves the fact that the
+work was developed in a separate branch.
+
+Run the relevant validation again after the merge:
+
+```bash
+git status
+git diff --check HEAD~1..HEAD
+
+./scripts/stow-preflight.sh
+./scripts/check-desktop-config.sh
+```
+
+For package or installer changes:
+
+```bash
+./scripts/validate-packages.sh amd-current
+./scripts/validate-packages.sh omen
+```
+
+For Hyprland changes:
+
+```bash
+hyprctl reload
+hyprctl configerrors
+```
+
+Push the updated stable branch:
+
+```bash
+git push origin main
+```
+
+After confirming that `main` is correct, delete the local branch:
+
+```bash
+git branch -d feature/descriptive-change
+```
+
+Delete the remote branch when it is no longer needed:
+
+```bash
+git push origin --delete feature/descriptive-change
+```
+
+### Alternative: fast-forward merge
+
+For a short branch with a clean linear history, a fast-forward-only merge may
+be used:
+
+```bash
+git switch main
+git pull --ff-only
+git merge --ff-only feature/descriptive-change
+git push origin main
+```
+
+This keeps the history linear but does not create a separate merge commit.
+
+Use one merge style consistently. Explicit `--no-ff` merges provide clearer
+history for substantial changes, while `--ff-only` is suitable for small,
+single-purpose branches.
+
+
 ## 18. Rollback and recovery
 
 Discard an unstaged file change:
