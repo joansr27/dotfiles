@@ -3,6 +3,7 @@ dunst
 grim
 hypridle
 hyprland
+hyprlauncher
 hyprlock
 hyprpaper
 polkit-kde-agent

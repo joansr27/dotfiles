@@ -40,12 +40,22 @@ Remove links belonging to one package:
 
 ## XDG user directories
 
-Desktop, Downloads, Documents and other personal directories are not
-managed through GNU Stow.
+The `xdg-user-dirs` Stow package manages:
 
-They are created with:
+    ~/.config/user-dirs.conf
+    ~/.config/user-dirs.dirs
 
-    xdg-user-dirs-update
+The directories themselves are not symbolic links. The installer must
+create the physical directories required by `user-dirs.dirs`, currently:
+
+    ~/Desktop
+    ~/Downloads
+
+The remaining XDG categories are redirected to `~/Downloads`.
+
+`user-dirs.conf` disables automatic rewriting of this configuration.
+Do not run `xdg-user-dirs-update` without first reviewing its effect on
+the files managed by Stow.
 
 ## Machine-specific configuration
 
