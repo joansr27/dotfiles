@@ -1,6 +1,16 @@
+# Editor temporary files
 *.swp
 *.swo
 *~
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+
+# Operating-system metadata
 .DS_Store
+
+# User caches and Trash
 .cache/
 .local/share/Trash/

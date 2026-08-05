@@ -1,8 +1,7 @@
 dolphin
-kitty
-neovim
-nano
 imv
+kitty
+nano
+neovim
 zathura
 zathura-pdf-mupdf
-google-chrome
