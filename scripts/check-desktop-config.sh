@@ -29,10 +29,18 @@ check_path "$HOME/.config/hypr/hyprpaper.conf"
 check_path "$HOME/.config/waybar/config.jsonc"
 check_path "$HOME/.config/waybar/style.css"
 check_path "$HOME/.config/kitty/kitty.conf"
+check_path "$HOME/.config/nvim/init.lua"
+check_path "$HOME/.config/wofi/config"
+check_path "$HOME/.config/wofi/style.css"
+check_path "$HOME/.config/user-dirs.conf"
+check_path "$HOME/.config/user-dirs.dirs"
 
 check_command hyprctl
 check_command waybar
 check_command kitty
+check_command nvim
+check_command wofi
+check_command xdg-user-dir
 check_command stow
 check_command wlsunset
 check_command swappy
