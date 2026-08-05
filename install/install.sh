@@ -176,6 +176,21 @@ xdg-mime default \
     org.kde.okular.desktop \
     application/pdf
 
+
+echo
+echo "=== Default web browser ==="
+
+xdg-settings set default-web-browser firefox.desktop
+
+for mime in \
+    text/html \
+    application/xhtml+xml \
+    x-scheme-handler/http \
+    x-scheme-handler/https
+do
+    xdg-mime default firefox.desktop "$mime"
+done
+
 cat <<'NEXT'
 
 Instalación base completada.

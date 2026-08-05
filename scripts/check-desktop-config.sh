@@ -26,6 +26,7 @@ check_command() {
 
 check_path "$HOME/.config/hypr/hyprland.conf"
 check_path "$HOME/.config/hypr/hyprpaper.conf"
+check_path "$HOME/.config/hypr/hypridle.conf"
 check_path "$HOME/.config/waybar/config.jsonc"
 check_path "$HOME/.config/waybar/style.css"
 check_path "$HOME/.config/kitty/kitty.conf"
@@ -36,8 +37,10 @@ check_path "$HOME/.config/user-dirs.conf"
 check_path "$HOME/.config/user-dirs.dirs"
 
 check_command hyprctl
+check_command hypridle
 check_command waybar
 check_command kitty
+check_command firefox
 check_command okular
 check_command nvim
 check_command wofi

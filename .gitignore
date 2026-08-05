@@ -17,3 +17,25 @@
 
 # Local machine selection
 /configs/hypr/.config/hypr/machine.conf
+
+# Private authentication material
+**/.ssh/
+**/.gnupg/
+**/.password-store/
+**/.local/share/keyrings/
+
+# Browser profiles
+**/.config/google-chrome/
+**/.config/chromium/
+**/.config/BraveSoftware/
+
+# Common credential containers
+*.pem
+*.p12
+*.pfx
+*.kdbx
+*.ovpn
+.netrc
+credentials.json
+secrets.json
+auth.json

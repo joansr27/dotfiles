@@ -1,88 +1,67 @@
-# Arch Linux / Hyprland dotfiles
+# Arch Linux / Hyprland Dotfiles
 
-Repositorio reproducible para desplegar un entorno Arch Linux con Hyprland,
-GNU Stow, perfiles de hardware y manifiestos de paquetes separados por
-procedencia y finalidad.
+A reproducible Arch Linux workstation configuration built around Hyprland,
+GNU Stow, machine-specific hardware profiles, explicit package manifests,
+validation scripts, and a documented Git workflow.
 
-Este repositorio no es una copia indiscriminada de `$HOME`. Solo contiene:
+This repository is designed to remain understandable and rebuildable months or
+years later without relying on shell history or memory.
 
-- configuraciones seleccionadas;
-- manifiestos de paquetes;
-- perfiles de hardware;
-- scripts de instalación, despliegue y validación;
-- documentación;
-- recursos visuales no sensibles.
-
-No contiene documentos personales, descargas, claves privadas, tokens,
-historiales, cachés ni credenciales.
+> [!IMPORTANT]
+> Clone this repository at `~/dotfiles`. Several scripts and configuration
+> files intentionally rely on that location.
 
 ---
 
-## 1. Objetivos
+## Table of contents
 
-Los objetivos principales son:
-
-1. Poder reconstruir el entorno en una instalación limpia de Arch Linux.
-2. Mantener configuraciones bajo control de versiones.
-3. Separar configuración común y configuración específica de cada máquina.
-4. Separar paquetes oficiales de paquetes AUR.
-5. Evitar enlaces simbólicos manuales difíciles de mantener.
-6. Poder validar los dotfiles antes de cerrar sesión o migrar.
-7. Mantener el portátil anterior operativo durante las migraciones.
-8. Permitir rollback mediante Git, backups y GNU Stow.
-9. Documentar explícitamente cómo modificar configuraciones y paquetes.
-10. Evitar que información privada termine en un repositorio público.
-
----
-
-## 2. Estado del repositorio
-
-La rama estable debe ser `main`.
-
-Los cambios importantes se desarrollan siempre en ramas separadas. Ejemplos:
-
-```text
-refactor/package-profiles
-refactor/waybar-single-config
-refactor/stow-layout
-refactor/finalize-repository
-feature/new-waybar-module
-fix/hyprland-monitor-profile
-```
-
-Una rama no contiene solamente los archivos modificados. Cada rama representa
-un estado completo del repositorio.
-
-Para comparar una rama con `main`:
-
-```bash
-git diff --stat main...HEAD
-git diff --name-status main...HEAD
-git diff main...HEAD
-```
+1. [Goals and design principles](#1-goals-and-design-principles)
+2. [Repository layout](#2-repository-layout)
+3. [Security and privacy model](#3-security-and-privacy-model)
+4. [GNU Stow configuration deployment](#4-gnu-stow-configuration-deployment)
+5. [Package manifest architecture](#5-package-manifest-architecture)
+6. [Machine-specific Hyprland profiles](#6-machine-specific-hyprland-profiles)
+7. [Default applications](#7-default-applications)
+8. [Installing a new computer](#8-installing-a-new-computer)
+9. [Migrating an existing Arch installation](#9-migrating-an-existing-arch-installation)
+10. [Updating an existing configuration](#10-updating-an-existing-configuration)
+11. [Installing and recording a new package](#11-installing-and-recording-a-new-package)
+12. [Removing a package](#12-removing-a-package)
+13. [Adding a new application configuration to Stow](#13-adding-a-new-application-configuration-to-stow)
+14. [Remote access](#14-remote-access)
+15. [Idle locking and session security](#15-idle-locking-and-session-security)
+16. [XDG user directories](#16-xdg-user-directories)
+17. [Git workflow](#17-git-workflow)
+18. [Rollback and recovery](#18-rollback-and-recovery)
+19. [Diagnostics](#19-diagnostics)
+20. [Maintenance checklist](#20-maintenance-checklist)
 
 ---
 
-## 3. Ubicación esperada
+## 1. Goals and design principles
 
-El repositorio debe clonarse exactamente en:
+The repository has the following goals:
 
-```text
-~/dotfiles
-```
+1. Reconstruct the workstation on a clean Arch Linux installation.
+2. Keep selected configuration files under version control.
+3. Separate common configuration from machine-specific configuration.
+4. Separate official repository packages from AUR packages.
+5. Avoid unmanaged symbolic links.
+6. Detect Stow conflicts before changing the live desktop.
+7. Validate package names before migration.
+8. Keep the previous computer operational during a migration.
+9. Make package additions and removals reproducible.
+10. Avoid storing credentials, browser profiles, personal data, or secrets.
+11. Keep risky actions explicit rather than silently enabling services.
+12. Provide a clear recovery path when a configuration change fails.
 
-Varias rutas internas y scripts presuponen esa ubicación.
-
-Clonado:
-
-```bash
-git clone https://github.com/joansr27/dotfiles.git "$HOME/dotfiles"
-cd "$HOME/dotfiles"
-```
+This repository is not a backup of the entire home directory. It contains only
+selected configuration, scripts, package manifests, documentation, and
+non-sensitive visual assets.
 
 ---
 
-## 4. Estructura
+## 2. Repository layout
 
 ```text
 dotfiles/
@@ -101,12 +80,15 @@ dotfiles/
 │       └── .config/
 ├── docs/
 ├── install/
+│   └── install.sh
 ├── packages/
 │   ├── common/
 │   ├── features/
 │   ├── hardware/
 │   ├── profiles/
 │   └── aur/
+│       ├── optional/
+│       └── profiles/
 ├── scripts/
 ├── wallpapers/
 ├── .gitignore
@@ -115,17 +97,16 @@ dotfiles/
 
 ### `configs/`
 
-Contiene paquetes GNU Stow.
+Each direct child of `configs/` is a GNU Stow package. The package reproduces
+the target path relative to `$HOME`.
 
-Cada paquete reproduce rutas relativas a `$HOME`.
-
-Ejemplo:
+Example:
 
 ```text
 configs/hypr/.config/hypr/hyprland.conf
 ```
 
-se despliega como:
+is deployed as:
 
 ```text
 ~/.config/hypr/hyprland.conf
@@ -133,60 +114,184 @@ se despliega como:
 
 ### `packages/`
 
-Es la única fuente de verdad para paquetes.
-
-No debe existir una lista monolítica `packages.txt`.
+This directory is the only active source of truth for installed packages.
+Historical package inventories may remain under `docs/`, but installation
+scripts do not read them.
 
 ### `install/`
 
-Contiene el instalador de alto nivel.
+Contains the high-level installation script for a clean Arch installation.
 
 ### `scripts/`
 
-Contiene herramientas pequeñas, comprobables y reutilizables.
+Contains tools for package resolution, package registration, machine
+selection, Stow deployment, validation, and remote-access control.
 
 ### `docs/`
 
-Contiene documentación histórica o técnica complementaria.
+Contains supporting technical documentation and historical migration records.
 
 ### `wallpapers/`
 
-Contiene recursos visuales compartidos por Hyprpaper e Hyprlock.
+Contains shared visual resources used by Hyprpaper or Hyprlock. Only
+non-sensitive images should be stored here.
 
 ---
 
-## 5. GNU Stow
+## 3. Security and privacy model
 
-GNU Stow crea y mantiene los enlaces entre el repositorio y `$HOME`.
+This is a public dotfiles repository. Never commit:
 
-Directorio Stow:
+```text
+~/.ssh/
+~/.gnupg/
+~/.password-store/
+private keys
+recovery codes
+API keys
+access tokens
+Tailscale authentication keys
+Sunshine credentials
+browser profiles
+browser cookies
+Wi-Fi credentials
+VPN configuration containing credentials
+password databases
+.env files
+personal documents
+shell history
+application databases
+```
+
+The `.gitignore` reduces accidental exposure, but it is not a security
+boundary. A tracked file remains tracked after a later `.gitignore` change.
+
+### Before every commit
+
+Inspect names:
+
+```bash
+git status --short
+git diff --cached --name-only
+```
+
+Inspect content:
+
+```bash
+git diff --cached
+```
+
+Search suspicious file names:
+
+```bash
+git diff --cached --name-only |
+    grep -Ei \
+    'secret|token|credential|password|private|\.env|id_rsa|id_ed25519'
+```
+
+Search suspicious content:
+
+```bash
+git diff --cached |
+    grep -Ei \
+    'api[_-]?key|access[_-]?token|client[_-]?secret|password'
+```
+
+A match is not automatically a secret, but every match must be reviewed.
+
+### Scan the current tree for common secret formats
+
+```bash
+secret_pattern='BEGIN (OPENSSH|RSA|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|tskey-[A-Za-z0-9-]+|xox[baprs]-[A-Za-z0-9-]+'
+
+git grep -nEI "$secret_pattern" -- . || true
+```
+
+### Scan all Git history
+
+```bash
+git rev-list --all |
+while IFS= read -r commit; do
+    git grep -nEI "$secret_pattern" "$commit" -- . 2>/dev/null || true
+done |
+sort -u
+```
+
+Deleting a secret in a later commit does not remove it from earlier commits.
+A leaked secret must be revoked first.
+
+### Images and metadata
+
+A photograph may expose identity, device model, date, or GPS metadata.
+
+```bash
+find configs wallpapers \
+    -type f \
+    \( -iname '*.jpg' -o \
+       -iname '*.jpeg' -o \
+       -iname '*.png' -o \
+       -iname '*.webp' \) \
+    -print
+```
+
+With ExifTool installed:
+
+```bash
+find configs wallpapers \
+    -type f \
+    \( -iname '*.jpg' -o \
+       -iname '*.jpeg' -o \
+       -iname '*.png' -o \
+       -iname '*.webp' \) \
+    -exec exiftool -a -G1 -s {} +
+```
+
+Review `GPSLatitude`, `GPSLongitude`, `Make`, `Model`, `SerialNumber`,
+`OwnerName`, `DateTimeOriginal`, and `Location`.
+
+`profile.jpg` must only be committed when it is intentionally public. A generic
+avatar is safer.
+
+### AUR trust boundary
+
+AUR packages are not official Arch repository packages. Their PKGBUILDs and
+install scripts execute with the current user's privileges.
+
+Before installing or updating an AUR package:
+
+```bash
+yay -Si package-name
+yay -G package-name
+less package-name/PKGBUILD
+```
+
+Review source URLs, checksums, `prepare()`, `build()`, `package()`, `.install`
+scripts, and changes shown by the AUR helper. Never run `makepkg` as root.
+
+---
+
+## 4. GNU Stow configuration deployment
+
+The Stow directory is:
 
 ```text
 ~/dotfiles/configs
 ```
 
-Destino:
+The deployment target is:
 
 ```text
 $HOME
 ```
 
-Ejemplo manual:
+### Validate all packages
 
 ```bash
-stow \
-    --dir="$HOME/dotfiles/configs" \
-    --target="$HOME" \
-    hypr
-```
-
-### Simular antes de aplicar
-
-```bash
+cd "$HOME/dotfiles"
 ./scripts/stow-preflight.sh
 ```
 
-Para un único paquete:
+### Simulate one package manually
 
 ```bash
 stow \
@@ -197,231 +302,236 @@ stow \
     waybar
 ```
 
-### Aplicar o actualizar
+### Deploy or update one package
 
 ```bash
 ./scripts/stow-config.sh waybar
 ```
 
-### Retirar enlaces
+### Remove links belonging to one package
 
 ```bash
 ./scripts/unstow-config.sh waybar
 ```
 
-`unstow` elimina enlaces. No debe borrar los archivos reales almacenados dentro
-del repositorio.
+Unstowing removes links managed by Stow. It does not delete the real files
+inside the repository.
 
-### Conflictos
-
-Un conflicto como:
+### Understanding conflicts
 
 ```text
 existing target is not owned by stow
 ```
 
-significa que ya existe un archivo o directorio real en el destino.
+means a real file, directory, or manually created link already occupies the
+target path. Do not use `stow --adopt` without understanding that it can move
+target files into the repository.
 
-No debe utilizarse `stow --adopt` sin inspeccionar cuidadosamente el resultado.
-
-Procedimiento seguro:
+Safe procedure:
 
 ```bash
 backup="$HOME/dotfiles-backup/manual-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$backup"
 
-cp -aL "$HOME/.config/waybar" "$backup/waybar"
-
+cp -aL "$HOME/.config/waybar" "$backup/waybar-copy"
 mv "$HOME/.config/waybar" "$backup/waybar-original"
 
 ./scripts/stow-config.sh waybar
 ```
 
----
+Check repository-related broken links:
 
-## 6. Perfiles de paquetes
-
-Los perfiles oficiales se encuentran en:
-
-```text
-packages/profiles/
+```bash
+find "$HOME/.config" \
+    -xtype l \
+    -lname '*dotfiles*' \
+    -print
 ```
 
-Perfiles actuales:
+Chrome/Chromium-style `SingletonLock` and `SingletonCookie` links are
+application runtime locks and are not Stow diagnostics.
+
+---
+
+## 5. Package manifest architecture
+
+Official packages are resolved from:
+
+```text
+packages/profiles/<profile>.txt
+```
+
+AUR packages are resolved from:
+
+```text
+packages/aur/profiles/<profile>.txt
+```
+
+Current profiles:
 
 ```text
 amd-current
 omen
 ```
 
-Resolver un perfil:
+Resolve and validate:
 
 ```bash
 ./scripts/resolve-packages.sh amd-current
 ./scripts/resolve-packages.sh omen
-```
-
-Los perfiles AUR están en:
-
-```text
-packages/aur/profiles/
-```
-
-Resolverlos:
-
-```bash
 ./scripts/resolve-aur-packages.sh amd-current
 ./scripts/resolve-aur-packages.sh omen
+./scripts/validate-packages.sh amd-current
+./scripts/validate-packages.sh omen
 ```
 
-### Categorías
+### Official package categories
 
-`packages/common/`:
+`packages/common/` contains packages shared by all machines:
 
-- sistema base;
-- red;
-- audio;
-- Hyprland;
-- Bluetooth;
-- herramientas CLI;
-- almacenamiento;
-- aplicaciones;
-- impresión;
-- mantenimiento;
-- fuentes.
+```text
+00-base.txt
+01-network-security.txt
+02-audio-media.txt
+03-hyprland.txt
+04-bluetooth.txt
+05-cli.txt
+06-storage-filesystems.txt
+07-applications.txt
+08-printing.txt
+09-power-maintenance.txt
+10-fonts.txt
+```
 
-`packages/hardware/`:
+`packages/features/` contains optional or purpose-specific groups.
 
-- microcódigo;
-- Mesa/Vulkan;
-- Intel;
-- AMD;
-- NVIDIA;
-- utilidades dependientes del hardware.
+`packages/hardware/` contains machine-dependent drivers and utilities.
 
-`packages/features/`:
+### AUR categories
 
-- Python científico;
-- herramientas de diagnóstico;
-- acceso remoto;
-- futuras características opcionales.
+`packages/aur/common.txt` contains shared AUR packages.
 
-`packages/aur/`:
+`packages/aur/optional/` contains optional AUR features.
 
-- aplicaciones no distribuidas en repositorios oficiales;
-- software propietario;
-- Sunshine;
-- herramientas obtenidas mediante AUR.
+`packages/aur/profiles/` defines which AUR manifests belong to each machine.
+
+### Historical inventories
+
+Files such as:
+
+```text
+docs/explicit-packages-before-refactor.txt
+docs/orphans-before-refactor.txt
+```
+
+are historical records only. Do not edit them merely to match active
+manifests.
 
 ---
 
-## 7. Perfiles de máquina de Hyprland
+## 6. Machine-specific Hyprland profiles
 
-Los monitores no se definen directamente en la configuración común.
+Monitor configuration is not stored directly in the common `hyprland.conf`.
 
-Perfiles:
+Available profiles:
 
 ```text
 ~/.config/hypr/machines/amd-current.conf
 ~/.config/hypr/machines/omen.conf
 ```
 
-El perfil activo se selecciona mediante:
+The active profile is selected through:
 
 ```text
 ~/.config/hypr/machine.conf
 ```
 
-Ese archivo es un enlace local no versionado.
+That selector is a local symbolic link and is intentionally ignored by Git.
 
-Seleccionar AMD:
+Select a machine:
 
 ```bash
 cd "$HOME/dotfiles"
 ./scripts/select-machine.sh amd-current
-```
-
-Seleccionar OMEN:
-
-```bash
-cd "$HOME/dotfiles"
 ./scripts/select-machine.sh omen
 ```
 
-Comprobar monitores:
+Discover output names and modes:
 
 ```bash
 hyprctl monitors all
 ```
 
-Después de modificar un perfil:
+Apply changes:
 
 ```bash
 hyprctl reload
 hyprctl configerrors
 ```
 
-Nunca debe suponerse que dos ordenadores usan los mismos nombres `eDP-*`,
-`HDMI-A-*` o `DP-*`.
+Never assume two machines use the same names such as `eDP-1`, `HDMI-A-1`, or
+`DP-1`.
 
 ---
 
-## 8. Lector de documentos
+## 7. Default applications
 
-El lector único es Okular.
+### Web browser: Firefox
 
-Motivos:
+Fresh installations use Firefox. Google Chrome is intentionally absent from
+active package manifests. This affects future installations only and does not
+uninstall Chrome from an existing machine.
 
-- lectura general;
-- PDFs científicos;
-- anotaciones y resaltado;
-- formularios;
-- firmas digitales;
-- miniaturas e índice;
-- selección de texto y regiones;
-- impresión;
-- múltiples formatos.
+Set Firefox:
 
-Configurar como predeterminado:
+```bash
+xdg-settings set default-web-browser firefox.desktop
+
+for mime in \
+    text/html \
+    application/xhtml+xml \
+    x-scheme-handler/http \
+    x-scheme-handler/https
+do
+    xdg-mime default firefox.desktop "$mime"
+done
+```
+
+Verify:
+
+```bash
+xdg-settings get default-web-browser
+xdg-mime query default text/html
+xdg-mime query default x-scheme-handler/http
+xdg-mime query default x-scheme-handler/https
+```
+
+### PDF and document reader: Okular
+
+Okular is the single document reader because it supports intensive daily work,
+annotations, highlighting, forms, signatures, indexes, thumbnails, printing,
+text selection, and multiple document formats.
 
 ```bash
 xdg-mime default org.kde.okular.desktop application/pdf
-```
-
-Comprobar:
-
-```bash
 xdg-mime query default application/pdf
+xdg-open document.pdf
 ```
 
-Abrir mediante asociación MIME:
-
-```bash
-xdg-open documento.pdf
-```
-
-Las preferencias generadas automáticamente por Okular no se versionan hasta
-que exista una decisión explícita sobre cuáles son realmente portables.
+Okular's generated user-state files are not versioned unless a future review
+identifies specific portable preferences worth keeping.
 
 ---
 
-## 9. Migración a un ordenador nuevo
+## 8. Installing a new computer
 
-### 9.1. Antes de empezar
+### 8.1 Back up information that does not belong in Git
 
-Guardar:
+Store personal documents, SSH/GPG keys, recovery codes, browser data, password
+databases, application licenses, unversioned configurations, disk information,
+bootloader configuration, and Btrfs layout separately.
 
-- documentos personales;
-- claves SSH;
-- claves GPG;
-- códigos de recuperación;
-- configuraciones no versionadas;
-- lista de discos y particiones;
-- configuración de bootloader;
-- información sobre Btrfs;
-- inventario de hardware.
-
-Comandos útiles:
+Useful inventory commands:
 
 ```bash
 lsblk -f
@@ -431,51 +541,37 @@ findmnt
 sudo btrfs subvolume list /
 ```
 
-No publicar la salida completa si contiene información sensible.
+Review output before publishing it.
 
-### 9.2. Instalar Arch Linux
+### 8.2 Complete a minimal Arch installation
 
-Completar una instalación base funcional antes de usar este repositorio.
+The new system must have a bootable installation, a non-root user, working
+`sudo`, network connectivity, `git`, and correctly configured Pacman
+repositories.
 
-Debe existir:
+### 8.3 Enable Multilib
 
-- usuario no root;
-- sudo;
-- conexión de red;
-- sistema arrancable;
-- `git`;
-- repositorios Pacman configurados.
-
-### 9.3. Habilitar Multilib
-
-Los perfiles contienen paquetes `lib32-*`.
-
-Editar:
+Edit:
 
 ```bash
 sudoedit /etc/pacman.conf
 ```
 
-Descomentar:
+Uncomment:
 
 ```ini
 [multilib]
 Include = /etc/pacman.d/mirrorlist
 ```
 
-Actualizar:
+Update and verify:
 
 ```bash
 sudo pacman -Syu
-```
-
-Verificar:
-
-```bash
 pacman-conf --repo-list | grep -x multilib
 ```
 
-### 9.4. Clonar
+### 8.4 Clone the repository
 
 ```bash
 sudo pacman -S --needed git
@@ -485,56 +581,40 @@ git clone \
     "$HOME/dotfiles"
 
 cd "$HOME/dotfiles"
-```
-
-Usar la rama estable:
-
-```bash
 git switch main
 git pull --ff-only
 ```
 
-### 9.5. Revisar antes de instalar
+### 8.5 Inspect manifests
 
 ```bash
-git status
-git log --oneline --decorate -10
-
 ./scripts/resolve-packages.sh omen
 ./scripts/resolve-aur-packages.sh omen
+./scripts/validate-packages.sh omen
 ```
 
-### 9.6. Ejecutar el instalador
+Review AUR PKGBUILDs before installation.
 
-Para el OMEN:
+### 8.6 Run the installer
 
 ```bash
 ./install/install.sh omen
 ```
 
-Para el portátil AMD:
+or:
 
 ```bash
 ./install/install.sh amd-current
 ```
 
-El instalador:
+The installer verifies Arch, resolves the profile, checks Multilib, updates the
+system, installs official and AUR packages, selects the machine profile,
+creates user directories, validates Stow conflicts, deploys configurations,
+sets Firefox as the browser, and sets Okular as the PDF reader.
 
-1. actualiza Arch;
-2. instala paquetes oficiales;
-3. instala `yay` cuando falta;
-4. instala paquetes AUR;
-5. selecciona el perfil de máquina;
-6. crea `Desktop` y `Downloads`;
-7. valida Stow;
-8. despliega configuraciones;
-9. configura Okular como lector PDF.
+It intentionally does not enable services automatically.
 
-No habilita servicios automáticamente.
-
-### 9.7. Servicios
-
-Revisar uno por uno:
+### 8.7 Enable services explicitly
 
 ```bash
 sudo systemctl enable --now NetworkManager
@@ -543,81 +623,47 @@ sudo systemctl enable --now firewalld
 sudo systemctl enable --now sddm
 ```
 
-Estado:
+Inspect each service with `systemctl status`.
 
-```bash
-systemctl status NetworkManager
-systemctl status bluetooth
-systemctl status firewalld
-systemctl status sddm
-```
-
-### 9.8. Tailscale
+### 8.8 Configure Tailscale
 
 ```bash
 sudo systemctl enable --now tailscaled
 sudo tailscale up
-```
-
-Estado:
-
-```bash
 tailscale status
 ```
 
-### 9.9. Sunshine
+Never store reusable Tailscale authentication keys in the repository.
 
-Primera prueba manual:
+### 8.9 Configure Sunshine
+
+The repository does not provide a custom Sunshine systemd unit. It uses the
+unit installed by the Sunshine package.
 
 ```bash
 systemctl --user start app-dev.lizardbyte.app.Sunshine
-```
-
-Estado:
-
-```bash
 systemctl --user status app-dev.lizardbyte.app.Sunshine
+systemctl --user cat app-dev.lizardbyte.app.Sunshine
 ```
 
-No exponer Sunshine mediante port forwarding público.
+Do not expose Sunshine through public router port forwarding. Use Tailscale.
 
-Los scripts manuales son:
-
-```bash
-./scripts/remote-on.sh
-./scripts/remote-off.sh
-```
-
-### 9.10. Detectar monitores
+### 8.10 Configure displays and backlight
 
 ```bash
 hyprctl monitors all
-```
-
-Editar:
-
-```bash
-nvim \
-    "$HOME/.config/hypr/machines/omen.conf"
-```
-
-Recargar:
-
-```bash
+nvim "$HOME/.config/hypr/machines/omen.conf"
 hyprctl reload
 hyprctl configerrors
-```
 
-### 9.11. Backlight
-
-```bash
 ls -l /sys/class/backlight
 brightnessctl --list
 ```
 
-Waybar intenta detectar automáticamente el dispositivo.
+Waybar lets its backlight module select an appropriate device rather than
+hard-coding the AMD laptop device.
 
-### 9.12. Validación
+### 8.11 Final validation
 
 ```bash
 cd "$HOME/dotfiles"
@@ -629,24 +675,18 @@ cd "$HOME/dotfiles"
 hyprctl configerrors
 pgrep -a waybar
 pgrep -a hyprpaper
+pgrep -a hypridle
 ```
 
-Comprobar enlaces rotos relacionados con el repositorio:
-
-```bash
-find "$HOME/.config" \
-    -xtype l \
-    -lname '*dotfiles*' \
-    -print
-```
+Log out and back in before considering the migration complete.
 
 ---
 
-## 10. Migrar una instalación existente
+## 9. Migrating an existing Arch installation
 
-Nunca mover todas las configuraciones simultáneamente.
+Do not migrate every configuration at once.
 
-### 10.1. Crear backup
+### 9.1 Create backups
 
 ```bash
 backup="$HOME/dotfiles-backup/existing-$(date +%Y%m%d-%H%M%S)"
@@ -655,11 +695,11 @@ mkdir -p "$backup"
 cp -aL "$HOME/.config/hypr" "$backup/hypr"
 cp -aL "$HOME/.config/waybar" "$backup/waybar"
 cp -aL "$HOME/.config/kitty" "$backup/kitty"
+cp -aL "$HOME/.config/nvim" "$backup/nvim"
+cp -aL "$HOME/.config/wofi" "$backup/wofi"
 ```
 
-### 10.2. Desplegar una aplicación cada vez
-
-Ejemplo Waybar:
+### 9.2 Migrate one package at a time
 
 ```bash
 stow \
@@ -668,31 +708,33 @@ stow \
     --dir="$HOME/dotfiles/configs" \
     --target="$HOME" \
     waybar
+
+./scripts/stow-config.sh waybar
 ```
 
-Resolver conflictos, aplicar y probar:
+Test the application before continuing.
+
+### 9.3 Special care for Hyprland
+
+Keep a terminal open and do not log out while `~/.config/hypr` is absent.
 
 ```bash
-./scripts/stow-config.sh waybar
+test -r "$HOME/.config/hypr/hyprland.conf"
+ls -ld "$HOME/.config/hypr"
+readlink -f "$HOME/.config/hypr"
 
-pkill waybar
-
-waybar \
-    -c "$HOME/.config/waybar/config.jsonc" \
-    -s "$HOME/.config/waybar/style.css"
+hyprctl reload
+hyprctl configerrors
 ```
 
-Continuar con la siguiente aplicación únicamente después de confirmar que la
-anterior funciona.
+If Hyprland suddenly uses an English keyboard, reversed scrolling, different
+rounding, or incorrect scaling, it is probably not reading the intended file.
 
 ---
 
-## 11. Modificar una configuración
+## 10. Updating an existing configuration
 
-Este es el procedimiento obligatorio para modificar Hyprland, Waybar, Kitty,
-Neovim, Wofi u otro paquete Stow.
-
-### 11.1. Actualizar el repositorio
+### 10.1 Start from updated `main`
 
 ```bash
 cd "$HOME/dotfiles"
@@ -701,233 +743,197 @@ git pull --ff-only
 git status
 ```
 
-### 11.2. Crear una rama
-
-Ejemplo:
+### 10.2 Create a branch
 
 ```bash
 git switch -c feature/waybar-network-tooltip
 ```
 
-Nunca desarrollar directamente en `main`.
+Do not develop directly on `main`.
 
-### 11.3. Editar
+### 10.3 Edit
 
-Como `~/.config` está enlazado al repositorio, puede editarse por cualquiera
-de las dos rutas.
-
-Ruta desplegada:
+Both paths refer to the same Stow-managed file:
 
 ```bash
 nvim "$HOME/.config/waybar/config.jsonc"
-```
 
-Ruta del repositorio:
-
-```bash
 nvim \
     "$HOME/dotfiles/configs/waybar/.config/waybar/config.jsonc"
 ```
 
-Ambas representan el mismo archivo.
-
-### 11.4. Probar
-
-Waybar:
-
-```bash
-pkill waybar
-
-waybar \
-    -l debug \
-    -c "$HOME/.config/waybar/config.jsonc" \
-    -s "$HOME/.config/waybar/style.css"
-```
-
-Hyprland:
+### 10.4 Test
 
 ```bash
 hyprctl reload
 hyprctl configerrors
-```
 
-Kitty:
+pkill waybar
+waybar \
+    -l debug \
+    -c "$HOME/.config/waybar/config.jsonc" \
+    -s "$HOME/.config/waybar/style.css"
 
-```bash
 kitty --config "$HOME/.config/kitty/kitty.conf"
-```
-
-Neovim:
-
-```bash
 nvim --headless '+qa'
 ```
 
-Scripts Bash:
+Validate Bash scripts:
 
 ```bash
-bash -n ruta/al/script.sh
+find scripts install \
+    -type f \
+    -name '*.sh' \
+    -print0 |
+while IFS= read -r -d '' script; do
+    bash -n "$script"
+done
 ```
 
-### 11.5. Revisar Git
+### 10.5 Review, stage, commit, and push
 
 ```bash
-cd "$HOME/dotfiles"
-
 git status --short
 git diff --check
 git diff --stat
 git diff
-```
 
-### 11.6. Guardar
+git add path/to/modified/file
 
-```bash
-git add ruta/modificada
-```
-
-Revisar el commit:
-
-```bash
 git diff --cached --check
 git diff --cached --stat
 git diff --cached
-```
 
-Crear commit:
-
-```bash
 git commit -m "feat: improve Waybar network tooltip"
-```
-
-Subir:
-
-```bash
 git push -u origin HEAD
 ```
 
-Después de revisar y probar, integrar en `main`.
+For session-start configuration, test a full logout/login before merging.
 
 ---
 
-## 12. Instalar y registrar un paquete nuevo
+## 11. Installing and recording a new package
 
-Un paquete no queda reproducible por el simple hecho de instalarlo.
+Installing a package on one computer is not enough. It must be classified and
+recorded so a future installation reproduces it.
 
-Debe:
+The recommended workflow uses `scripts/add-package.sh`.
 
-1. instalarse;
-2. clasificarse;
-3. añadirse al manifiesto correcto;
-4. validarse;
-5. probarse;
-6. registrarse en Git.
-
-### 12.1. Determinar procedencia
-
-Repositorio oficial:
+### 11.1 Determine the source
 
 ```bash
-pacman -Si nombre-paquete
+pacman -Si package-name
+yay -Si package-name
 ```
 
-AUR:
+Never record the same package in official and AUR manifests.
 
-```bash
-yay -Si nombre-paquete
-```
-
-No añadir el mismo paquete a ambas categorías.
-
-### 12.2. Crear rama
+### 11.2 Create a package branch
 
 ```bash
 cd "$HOME/dotfiles"
 git switch main
 git pull --ff-only
-git switch -c packages/add-nombre-paquete
+git status
+git switch -c packages/add-package-name
 ```
 
-### 12.3. Paquete oficial común
-
-Ejemplo:
+### 11.3 Common official application
 
 ```bash
-printf '%s\n' nombre-paquete \
-    >> packages/common/07-applications.txt
-
-sort -u \
-    -o packages/common/07-applications.txt \
-    packages/common/07-applications.txt
+./scripts/add-package.sh \
+    --source official \
+    --package firefox \
+    --manifest common/07-applications.txt
 ```
 
-Instalar:
+The common applications manifest is already referenced by both profiles.
+
+### 11.4 New official feature manifest
 
 ```bash
-sudo pacman -S --needed nombre-paquete
+./scripts/add-package.sh \
+    --source official \
+    --package package-name \
+    --manifest features/example-feature.txt \
+    --profiles amd-current,omen
 ```
 
-### 12.4. Paquete específico de hardware
+The script validates the package, checks official/AUR duplication, installs it
+unless `--no-install` is used, creates and sorts the manifest, adds it to the
+requested profiles, resolves affected profiles, and shows the Git diff.
 
-AMD:
+### 11.5 Hardware-specific official package
 
 ```bash
-printf '%s\n' nombre-paquete \
-    >> packages/hardware/amd-laptop.txt
+./scripts/add-package.sh \
+    --source official \
+    --package package-name \
+    --manifest hardware/omen-intel-nvidia.txt
 ```
 
-OMEN:
+or:
 
 ```bash
-printf '%s\n' nombre-paquete \
-    >> packages/hardware/omen-intel-nvidia.txt
+./scripts/add-package.sh \
+    --source official \
+    --package package-name \
+    --manifest hardware/amd-laptop.txt
 ```
 
-Ordenar:
+### 11.6 Common AUR package
 
 ```bash
-sort -u -o ARCHIVO ARCHIVO
+./scripts/add-package.sh \
+    --source aur \
+    --package package-name \
+    --manifest common.txt
 ```
 
-### 12.5. Paquete de una característica
+Inspect the PKGBUILD and changes shown by `yay` before accepting.
 
-Crear:
+### 11.7 Optional AUR feature
 
 ```bash
-printf '%s\n' nombre-paquete \
-    >> packages/features/nombre-caracteristica.txt
+./scripts/add-package.sh \
+    --source aur \
+    --package package-name \
+    --manifest optional/example-feature.txt \
+    --profiles omen
 ```
 
-Añadir la característica al perfil:
+### 11.8 Preview only
 
 ```bash
-printf '%s\n' \
-    'features/nombre-caracteristica.txt' \
-    >> packages/profiles/omen.txt
+./scripts/add-package.sh \
+    --dry-run \
+    --source official \
+    --package package-name \
+    --manifest common/07-applications.txt
 ```
 
-### 12.6. Paquete AUR
+### 11.9 Record without installing locally
 
 ```bash
-printf '%s\n' nombre-paquete \
-    >> packages/aur/common.txt
-
-sort -u \
-    -o packages/aur/common.txt \
-    packages/aur/common.txt
-
-yay -S --needed nombre-paquete
+./scripts/add-package.sh \
+    --no-install \
+    --source official \
+    --package package-name \
+    --manifest hardware/omen-intel-nvidia.txt
 ```
 
-### 12.7. Validar
+### 11.10 Validate
 
 ```bash
+./scripts/resolve-packages.sh amd-current
 ./scripts/resolve-packages.sh omen
+./scripts/resolve-aur-packages.sh amd-current
 ./scripts/resolve-aur-packages.sh omen
+./scripts/validate-packages.sh amd-current
 ./scripts/validate-packages.sh omen
 ```
 
-Duplicados:
+Official/AUR overlap:
 
 ```bash
 comm -12 \
@@ -935,245 +941,415 @@ comm -12 \
     <(./scripts/resolve-aur-packages.sh omen | sort -u)
 ```
 
-Debe quedar vacío.
+It should print nothing.
 
-### 12.8. Guardar en Git
+### 11.11 Review and commit
 
 ```bash
 git status --short
 git diff --check
 git diff
 
-git add packages/
-git commit -m "packages: add nombre-paquete"
+git add packages/ scripts/add-package.sh
+
+git diff --cached --check
+git diff --cached --stat
+git diff --cached
+
+git commit -m "packages: add package-name"
 git push -u origin HEAD
 ```
 
----
+### 11.12 Manual fallback
 
-## 13. Eliminar un paquete
-
-Crear rama:
+Official common package:
 
 ```bash
-git switch main
-git pull --ff-only
-git switch -c packages/remove-nombre-paquete
+printf '%s\n' package-name \
+    >> packages/common/07-applications.txt
+
+sort -u \
+    -o packages/common/07-applications.txt \
+    packages/common/07-applications.txt
+
+sudo pacman -S --needed package-name
 ```
 
-Eliminarlo del manifiesto:
+AUR common package:
+
+```bash
+printf '%s\n' package-name \
+    >> packages/aur/common.txt
+
+sort -u \
+    -o packages/aur/common.txt \
+    packages/aur/common.txt
+
+yay -S --needed package-name
+```
+
+For a newly created manifest, add its relative path to the appropriate profile.
+
+---
+
+## 12. Removing a package
+
+```bash
+cd "$HOME/dotfiles"
+git switch main
+git pull --ff-only
+git switch -c packages/remove-package-name
+```
+
+Remove it from the active manifest:
 
 ```bash
 sed -i \
-    '/^nombre-paquete$/d' \
+    '/^package-name$/d' \
     packages/common/07-applications.txt
 ```
 
-Desinstalar:
+Uninstall only when appropriate for the current machine:
 
 ```bash
-sudo pacman -Rns nombre-paquete
+sudo pacman -Rns package-name
 ```
 
-Cuando tenga configuración Stow:
+Remove Stow configuration when no longer used:
 
 ```bash
-./scripts/unstow-config.sh nombre
-git rm -r configs/nombre
+./scripts/unstow-config.sh application-name
+git rm -r configs/application-name
 ```
 
-Validar y guardar:
+Validate and commit:
 
 ```bash
+./scripts/validate-packages.sh amd-current
 ./scripts/validate-packages.sh omen
 
 git add -A
-git commit -m "packages: remove nombre-paquete"
+git diff --cached
+git commit -m "packages: remove package-name"
 git push -u origin HEAD
 ```
 
 ---
 
-## 14. Añadir una nueva configuración a Stow
+## 13. Adding a new application configuration to Stow
 
-Supóngase una aplicación llamada `example`.
-
-Estructura deseada:
-
-```text
-configs/example/.config/example/
-```
-
-Crear backup:
+Assume the application uses `~/.config/example/`.
 
 ```bash
 backup="$HOME/dotfiles-backup/example-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$backup"
+cp -aL "$HOME/.config/example" "$backup/example-copy"
 
-cp -aL "$HOME/.config/example" "$backup/example"
-```
-
-Copiar al repositorio:
-
-```bash
-mkdir -p \
-    "$HOME/dotfiles/configs/example/.config"
-
+mkdir -p "$HOME/dotfiles/configs/example/.config"
 cp -a \
     "$HOME/.config/example" \
     "$HOME/dotfiles/configs/example/.config/example"
-```
 
-Mover temporalmente el destino:
-
-```bash
 mv \
     "$HOME/.config/example" \
     "$backup/example-original"
-```
 
-Simular:
-
-```bash
 stow \
     --simulate \
     --verbose=2 \
     --dir="$HOME/dotfiles/configs" \
     --target="$HOME" \
     example
-```
 
-Aplicar:
-
-```bash
 ./scripts/stow-config.sh example
 ```
 
-Probar la aplicación antes de crear el commit.
+Test the application, then commit:
+
+```bash
+git add configs/example
+git diff --cached
+git commit -m "config: manage example with Stow"
+git push -u origin HEAD
+```
+
+Special targets such as individual files directly under `~/.config` require a
+custom Stow package layout.
 
 ---
 
-## 15. Git y seguridad
+## 14. Remote access
 
-El repositorio es público.
+The design uses Tailscale for private connectivity and Sunshine as the
+streaming host. The repository does not contain a custom Sunshine systemd unit.
 
-Nunca añadir:
+Start:
 
-```text
-~/.ssh/
-~/.gnupg/
-.env
-.env.*
-tokens
-cookies
-contraseñas
-claves privadas
-credenciales de API
-perfiles de navegador
-historiales
-bases de datos personales
+```bash
+cd "$HOME/dotfiles"
+./scripts/remote-on.sh
 ```
 
-Antes de hacer commit:
+Equivalent commands:
+
+```bash
+sudo systemctl start tailscaled
+systemctl --user start app-dev.lizardbyte.app.Sunshine
+```
+
+Stop:
+
+```bash
+./scripts/remote-off.sh
+```
+
+Status:
+
+```bash
+tailscale status
+systemctl --user status app-dev.lizardbyte.app.Sunshine
+```
+
+Do not forward Sunshine ports publicly. Keep Sunshine updated, protect its
+administration interface, and do not commit credentials.
+
+---
+
+## 15. Idle locking and session security
+
+Hypridle is installed from the official repository and started by Hyprland:
+
+```text
+exec-once = hypridle
+```
+
+Configuration:
+
+```text
+~/.config/hypr/hypridle.conf
+```
+
+The intended behavior is to lock after inactivity, lock before external sleep,
+turn displays off after locking, and restore displays on activity.
+
+Verify:
+
+```bash
+pacman -Q hypridle
+command -v hypridle
+test -r "$HOME/.config/hypr/hypridle.conf"
+grep -n '^exec-once = hypridle$' \
+    "$HOME/.config/hypr/hyprland.conf"
+```
+
+Start manually in the current session:
+
+```bash
+pkill -x hypridle 2>/dev/null || true
+hypridle > /tmp/hypridle.log 2>&1 &
+disown
+sleep 1
+pgrep -a hypridle
+```
+
+Test locking:
+
+```bash
+loginctl lock-session
+```
+
+After unlocking:
+
+```bash
+pgrep -a hypridle
+cat /tmp/hypridle.log
+```
+
+Do not simultaneously enable a Hypridle user service while also starting it
+with `exec-once`, unless the startup design is intentionally changed.
+
+---
+
+## 16. XDG user directories
+
+The `xdg-user-dirs` Stow package manages:
+
+```text
+~/.config/user-dirs.conf
+~/.config/user-dirs.dirs
+```
+
+It does not create `~/.config/xdg`.
+
+```bash
+mkdir -p "$HOME/Desktop" "$HOME/Downloads"
+
+xdg-user-dir DESKTOP
+xdg-user-dir DOWNLOAD
+xdg-user-dir DOCUMENTS
+xdg-user-dir PICTURES
+```
+
+The current design keeps `Desktop` and `Downloads` separate and redirects other
+standard categories to `Downloads`.
+
+Do not run `xdg-user-dirs-update` without reviewing whether it may rewrite
+files managed by Stow.
+
+---
+
+## 17. Git workflow
+
+Update local `main`:
+
+```bash
+cd "$HOME/dotfiles"
+git switch main
+git pull --ff-only
+git status
+```
+
+Create a branch:
+
+```bash
+git switch -c type/descriptive-name
+```
+
+Suggested prefixes:
+
+```text
+feature/
+fix/
+packages/
+config/
+docs/
+refactor/
+security/
+```
+
+Review:
 
 ```bash
 git status --short
+git diff --check
+git diff --stat
+git diff
+```
+
+Stage selectively:
+
+```bash
+git add path/to/file
+```
+
+Inspect staged content:
+
+```bash
+git diff --cached --check
+git diff --cached --stat
 git diff --cached
 ```
 
-Buscar nombres sospechosos:
+Commit and push:
 
 ```bash
-git diff --cached --name-only |
-    grep -Ei \
-    'secret|token|credential|password|private|\.env|id_rsa|id_ed25519'
+git commit -m "type: concise description"
+git push -u origin HEAD
 ```
 
-Buscar contenido sospechoso:
+Compare with `main`:
 
 ```bash
-git diff --cached |
-    grep -Ei \
-    'api[_-]?key|access[_-]?token|client[_-]?secret|password'
+git diff --stat main...HEAD
+git diff --name-status main...HEAD
+git diff main...HEAD
 ```
 
-Una coincidencia no siempre es una credencial, pero debe revisarse.
+Do not force-push shared or public history unless history rewriting is
+deliberate and coordinated.
 
 ---
 
-## 16. Rollback
+## 18. Rollback and recovery
 
-### Deshacer cambios no guardados de un archivo
+Discard an unstaged file change:
 
 ```bash
-git restore ruta/al/archivo
+git restore path/to/file
 ```
 
-### Deshacer cambios preparados
+Unstage:
 
 ```bash
-git restore --staged ruta/al/archivo
+git restore --staged path/to/file
 ```
 
-### Restaurar desde otra rama
+Restore from `main`:
 
 ```bash
-git show main:ruta/al/archivo > ruta/al/archivo
+git show main:path/to/file > path/to/file
 ```
 
-### Revertir un commit publicado
+Revert a published commit:
 
 ```bash
-git revert SHA_DEL_COMMIT
+git revert COMMIT_SHA
 git push
 ```
 
-Evitar reescribir el historial público mediante `git push --force`.
-
-### Retirar temporalmente una configuración
+Temporarily remove and redeploy a Stow package:
 
 ```bash
 ./scripts/unstow-config.sh waybar
-```
-
-### Volver a desplegarla
-
-```bash
 ./scripts/stow-config.sh waybar
 ```
 
----
-
-## 17. Diagnóstico
-
-### Hyprland parece usar valores predeterminados
-
-Comprobar:
+Recover a missing Hyprland link:
 
 ```bash
-ls -ld "$HOME/.config/hypr"
-readlink -f "$HOME/.config/hypr"
+test -r \
+    "$HOME/dotfiles/configs/hypr/.config/hypr/hyprland.conf"
 
-test -r "$HOME/.config/hypr/hyprland.conf"
-```
+mkdir -p "$HOME/.config"
+ln -s \
+    "$HOME/dotfiles/configs/hypr/.config/hypr" \
+    "$HOME/.config/hypr"
 
-Después:
-
-```bash
 hyprctl reload
 hyprctl configerrors
 ```
 
-### Waybar no arranca
+Later remove the manual link and let Stow recreate it.
+
+---
+
+## 19. Diagnostics
 
 ```bash
+./scripts/check-desktop-config.sh
+./scripts/stow-preflight.sh
+./scripts/validate-packages.sh omen
+
+hyprctl reload
+hyprctl configerrors
+
 waybar \
     -l debug \
     -c "$HOME/.config/waybar/config.jsonc" \
     -s "$HOME/.config/waybar/style.css"
+
+pgrep -a waybar
+pgrep -a hyprpaper
+pgrep -a hypridle
+
+systemctl --failed
+systemctl --user --failed
+
+xdg-settings get default-web-browser
+xdg-mime query default application/pdf
 ```
 
-### Enlaces rotos del repositorio
+Broken repository links:
 
 ```bash
 find "$HOME/.config" \
@@ -1182,116 +1358,50 @@ find "$HOME/.config" \
     -print
 ```
 
-Los enlaces `SingletonLock` o `SingletonCookie` de Chrome no pertenecen a
-Stow y no deben usarse para diagnosticar el repositorio.
-
-### Revisar paquetes Stow
+When Hyprland appears to use defaults:
 
 ```bash
-./scripts/stow-preflight.sh
-```
-
-### Revisar escritorio
-
-```bash
-./scripts/check-desktop-config.sh
-```
-
-### Revisar paquetes
-
-```bash
-./scripts/validate-packages.sh omen
-```
-
-### Revisar servicios fallidos
-
-```bash
-systemctl --failed
-systemctl --user --failed
-```
-
----
-
-## 18. XDG user directories
-
-El paquete:
-
-```text
-configs/xdg-user-dirs
-```
-
-gestiona:
-
-```text
-~/.config/user-dirs.conf
-~/.config/user-dirs.dirs
-```
-
-No crea un directorio `~/.config/xdg`.
-
-Los directorios físicos deben existir:
-
-```bash
-mkdir -p "$HOME/Desktop" "$HOME/Downloads"
-```
-
-Comprobar:
-
-```bash
-xdg-user-dir DESKTOP
-xdg-user-dir DOWNLOAD
-xdg-user-dir DOCUMENTS
-```
-
-No ejecutar `xdg-user-dirs-update` sin revisar primero si reescribirá los
-archivos gestionados por Stow.
-
----
-
-## 19. Compatibilidad futura de Hyprland
-
-La configuración actual utiliza:
-
-```text
-hyprland.conf
-```
-
-Antes de una actualización mayor de Hyprland debe revisarse la documentación
-de la versión instalada.
-
-Comprobar versión:
-
-```bash
-hyprctl version
-pacman -Qi hyprland
-```
-
-No convertir automáticamente toda la configuración a un formato nuevo durante
-una actualización rutinaria. La conversión debe realizarse en una rama
-separada, con backups y manteniendo una sesión o TTY de recuperación.
-
----
-
-## 20. Checklist de mantenimiento
-
-Antes de publicar cambios importantes:
-
-```bash
-git status --short
-git diff --check
-
-bash -n scripts/*.sh
-bash -n install/*.sh
-
-./scripts/stow-preflight.sh
-./scripts/check-desktop-config.sh
-./scripts/validate-packages.sh omen
-
+ls -ld "$HOME/.config/hypr"
+readlink -f "$HOME/.config/hypr"
+test -r "$HOME/.config/hypr/hyprland.conf"
 hyprctl reload
 hyprctl configerrors
 ```
 
-Después:
+---
+
+## 20. Maintenance checklist
+
+Before publishing a major change:
+
+```bash
+cd "$HOME/dotfiles"
+
+git status --short
+git diff --check
+
+find scripts install \
+    -type f \
+    -name '*.sh' \
+    -print0 |
+while IFS= read -r -d '' script; do
+    bash -n "$script"
+done
+
+./scripts/stow-preflight.sh
+./scripts/check-desktop-config.sh
+./scripts/validate-packages.sh amd-current
+./scripts/validate-packages.sh omen
+
+hyprctl reload
+hyprctl configerrors
+
+pgrep -a waybar
+pgrep -a hyprpaper
+pgrep -a hypridle
+```
+
+Before committing:
 
 ```bash
 git add -A
@@ -1299,21 +1409,21 @@ git add -A
 git diff --cached --check
 git diff --cached --stat
 git diff --cached
-
-git commit -m "descripción clara"
-git push -u origin HEAD
 ```
 
-Nunca fusionar una reorganización importante en `main` sin:
+Before merging a substantial desktop change:
 
-- probar una sesión completa;
-- cerrar sesión y volver a entrar;
-- verificar Waybar;
-- verificar Hyprlock;
-- verificar Kitty;
-- verificar Wofi;
-- verificar Okular;
-- comprobar enlaces;
-- comprobar perfiles;
-- comprobar que no hay credenciales;
-- mantener un backup fuera del repositorio.
+- test affected applications;
+- test Hyprlock;
+- test idle locking;
+- test Waybar and Wofi;
+- test Kitty and Neovim;
+- test Firefox associations;
+- test Okular associations;
+- log out and back in;
+- check broken links;
+- validate both package profiles;
+- inspect all staged files for secrets;
+- keep a backup outside the repository.
+
+The stable branch should only receive changes that pass these checks.

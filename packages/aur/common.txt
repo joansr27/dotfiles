@@ -1,4 +1,3 @@
 apple-fonts
-google-chrome
 matlab-mpm
 spotify
