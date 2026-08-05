@@ -114,7 +114,7 @@ case "$source_type" in
         ;;
 esac
 
-if [[ ! "$package_name" =~ ^[A-Za-z0-9@._+:-]+$ ]]; then
+if [[ ! "$package_name" =~ ^[A-Za-z0-9][A-Za-z0-9@._+:-]*$ ]]; then
     echo "Invalid package name: $package_name" >&2
     exit 1
 fi

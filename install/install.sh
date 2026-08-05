@@ -64,8 +64,15 @@ do
     fi
 done
 
+official_packages_text="$("$official_resolver" "$profile")"
+
+if [[ -z "$official_packages_text" ]]; then
+    echo "Official package profile resolved to an empty list." >&2
+    exit 1
+fi
+
 mapfile -t official_packages < <(
-    "$official_resolver" "$profile"
+    printf '%s\n' "$official_packages_text"
 )
 
 if printf '%s\n' "${official_packages[@]}" |
@@ -125,9 +132,14 @@ if ! command -v yay >/dev/null 2>&1; then
     trap - EXIT
 fi
 
-mapfile -t aur_packages < <(
-    "$aur_resolver" "$profile"
-)
+aur_packages_text="$("$aur_resolver" "$profile")"
+aur_packages=()
+
+if [[ -n "$aur_packages_text" ]]; then
+    mapfile -t aur_packages < <(
+        printf '%s\n' "$aur_packages_text"
+    )
+fi
 
 if (( ${#aur_packages[@]} > 0 )); then
     echo
