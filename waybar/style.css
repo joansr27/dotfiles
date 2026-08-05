@@ -1,149 +1,136 @@
-/* @define-color background    rgba(35, 35, 35, 1.0);
-@define-color bubble        rgba(60, 60, 60, 1.0);
-@define-color contour       #ededed; 
-@define-color text          rgba(230, 230, 230, 1.0); */
-
-@define-color background    rgba(245, 240, 236, 0.0);
-@define-color bubble        rgba(230, 220, 211, 1.0);
-@define-color contour       rgba(205, 190, 178, 1.0);
-@define-color text          rgba(92, 75, 65, 1.0);
+@define-color background rgba(245, 240, 236, 0.0);
+@define-color bubble rgba(230, 220, 211, 1.0);
+@define-color contour rgba(205, 190, 178, 1.0);
+@define-color text rgba(92, 75, 65, 1.0);
 
 * {
     border: none;
     border-radius: 0;
+
     font-family: "JetBrainsMono Nerd Font Mono", monospace;
-    /* font-family: "SF Pro Display"; */
     font-size: 8pt;
     font-weight: bold;
+
     color: @text;
 }
 
 window#waybar.pinned {
-	background-color: @background;
-	border-radius: 10px;
-	/* border-bottom: 2px solid @contour; */
+    background-color: @background;
+    border-radius: 10px;
 }
+
+/* Right-side bubbles */
 
 #time-date,
 #sound,
 #connections,
-#batteries,
-#pin {
+#batteries {
     background-color: @bubble;
     border-radius: 100px;
-    padding: 0px 5px;
-    /* border: 1px solid @contour; */
+
+    padding: 0 5px;
+
     margin-right: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
+/* Left-side bubbles */
+
 #power-menu,
 #workspace-dock {
     background-color: @bubble;
     border-radius: 100px;
-    padding: 0px 5px;
-    /* border: 1px solid @contour; */
+
+    padding: 0 5px;
+
     margin-left: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
+/* Standard modules */
 
-/* ------------------------------------------------- */
-
-window#waybar.floating {
-	background-color: transparent;
-}
-
-window#waybar.floating .modules-left, 
-window#waybar.floating .modules-center
-window#waybar.floating .modules-right {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0; 
-}
-
-/* ------------------------------------------------- */
-
-
-#clock, #network, #bluetooth, #pulseaudio, #power-profiles-daemon, #backlight, #battery, #custom-barmodef, #workspaces button {
+#clock,
+#network,
+#bluetooth,
+#pulseaudio,
+#power-profiles-daemon,
+#backlight,
+#battery,
+#workspaces button {
     background: transparent;
     box-shadow: none;
+
     padding: 0 10px;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
+    min-height: 0;
 }
 
-#custom-sysmenu, #custom-lock, #custom-sleep, #custom-exit, #custom-reboot, #custom-power,#custom-nightlight, #custom-barmodep {
+/* Custom modules */
+
+#custom-sysmenu,
+#custom-lock,
+#custom-sleep,
+#custom-exit,
+#custom-reboot,
+#custom-power,
+#custom-nightlight {
     background: transparent;
     box-shadow: none;
+
     padding: 0 10px;
+    min-height: 0;
+
     transition: all 0.3s ease;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
 }
 
-/* === WIFI AND BLUETOOTH === */
+/* Wi-Fi and Bluetooth state */
 
-#network, 
+#network,
 #bluetooth.connected {
-    opacity: 1.0; 
+    opacity: 1;
 }
 
-#network.disabled, 
-#network.disconnected, 
-#bluetooth.on, 
-#bluetooth.off, 
+#network.disabled,
+#network.disconnected,
+#bluetooth.on,
+#bluetooth.off,
 #bluetooth.disabled {
     opacity: 0.5;
 }
 
-/* ========================= */
+/* Inline system drawer */
 
 #group-sysmenu {
-    border-radius: 12px; 
-    transition: all 0.3s ease;
+    border-radius: 12px;
     padding: 0 4px;
-    min-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
+    min-height: 0;
+
+    transition: all 0.3s ease;
 }
 
 #group-sysmenu:hover #custom-sysmenu {
-    font-size: 0px;
+    font-size: 0;
     padding: 0;
     margin: 0;
     opacity: 0;
 }
 
-#custom-lock:hover, #custom-sleep:hover, #custom-exit:hover, #custom-reboot:hover, #custom-power:hover, #custom-nightlight:hover, #custom-barmodep:hover {
+#custom-lock:hover,
+#custom-sleep:hover,
+#custom-exit:hover,
+#custom-reboot:hover,
+#custom-power:hover,
+#custom-nightlight:hover {
     opacity: 0.5;
 }
 
-/* === UNPINNED BAR === */
-
-#custom-barmodef {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#custom-barmodef:hover {
-    opacity: 0.9;
-    background: @bubble;
-    border-radius: 10px;
-}
-
-/* ========================= */
+/* Tooltips */
 
 tooltip {
     background: alpha(#1E1E1E, 0.95);
     border: 1px solid #2D2D2D;
     border-radius: 10px;
-    /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); */
 }
 
 tooltip label {
