@@ -12,16 +12,16 @@ stow_preflight="$repo_root/scripts/stow-preflight.sh"
 
 usage() {
     cat <<USAGE
-Uso:
+Usage:
 
-    $0 <perfil>
+    $0 <profile>
 
-Perfiles disponibles:
+Available profiles:
 
     amd-current
     omen
 
-Ejemplo:
+Example:
 
     $0 omen
 USAGE
@@ -36,19 +36,19 @@ case "$profile" in
     amd-current|omen)
         ;;
     *)
-        echo "Perfil no reconocido: $profile" >&2
+        echo "Unrecognized profile: $profile" >&2
         usage
         exit 1
         ;;
 esac
 
 if (( EUID == 0 )); then
-    echo "No ejecutes este script como root." >&2
+    echo "Do not run this script as root." >&2
     exit 1
 fi
 
 if [[ ! -f /etc/arch-release ]]; then
-    echo "Este instalador está diseñado para Arch Linux." >&2
+    echo "This installer is designed for Arch Linux." >&2
     exit 1
 fi
 
@@ -59,7 +59,7 @@ for script in \
     "$stow_preflight"
 do
     if [[ ! -x "$script" ]]; then
-        echo "Script ausente o no ejecutable: $script" >&2
+        echo "Missing or non-executable script: $script" >&2
         exit 1
     fi
 done
@@ -81,35 +81,35 @@ if printf '%s\n' "${official_packages[@]}" |
     if ! pacman-conf --repo-list |
        grep -qx 'multilib'; then
         cat >&2 <<'ERROR'
-El perfil contiene paquetes lib32, pero [multilib] no está habilitado.
+The profile contains lib32 packages, but [multilib] is not enabled.
 
-Edita /etc/pacman.conf y descomenta:
+Edit /etc/pacman.conf and uncomment:
 
     [multilib]
     Include = /etc/pacman.d/mirrorlist
 
-Después ejecuta:
+Then run:
 
     sudo pacman -Syu
 
-y vuelve a lanzar el instalador.
+and run the installer again.
 ERROR
         exit 1
     fi
 fi
 
-echo "=== Actualizando el sistema ==="
+echo "=== Updating system ==="
 
 sudo pacman -Syu --needed base-devel git
 
 echo
-echo "=== Instalando paquetes oficiales ==="
+echo "=== Installing official packages ==="
 
 sudo pacman -S --needed "${official_packages[@]}"
 
 if ! command -v yay >/dev/null 2>&1; then
     echo
-    echo "=== Instalando yay ==="
+    echo "=== Installing yay ==="
 
     build_root="$(mktemp -d)"
 
@@ -143,30 +143,30 @@ fi
 
 if (( ${#aur_packages[@]} > 0 )); then
     echo
-    echo "=== Instalando paquetes AUR ==="
+    echo "=== Installing AUR packages ==="
 
     yay -S --needed "${aur_packages[@]}"
 fi
 
 echo
-echo "=== Seleccionando la máquina ==="
+echo "=== Selecting machine profile ==="
 
 "$machine_selector" "$profile"
 
 echo
-echo "=== Creando directorios personales ==="
+echo "=== Creating user directories ==="
 
 mkdir -p \
     "$HOME/Desktop" \
     "$HOME/Downloads"
 
 echo
-echo "=== Comprobando conflictos de Stow ==="
+echo "=== Checking for Stow conflicts ==="
 
 "$stow_preflight"
 
 echo
-echo "=== Desplegando configuraciones ==="
+echo "=== Deploying configurations ==="
 
 for package_dir in "$repo_root/configs"/*; do
     [[ -d "$package_dir" ]] || continue
@@ -182,7 +182,7 @@ for package_dir in "$repo_root/configs"/*; do
 done
 
 echo
-echo "=== Lector PDF predeterminado ==="
+echo "=== Default PDF reader ==="
 
 xdg-mime default \
     org.kde.okular.desktop \

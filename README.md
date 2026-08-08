@@ -69,6 +69,10 @@ The repository is **not** a full home-directory backup.
 
 ```text
 dotfiles/
+├── assets/
+│   ├── hyprlock.jpg
+│   ├── profile.jpg
+│   └── wallpaper.jpg
 ├── configs/
 │   ├── hypr/
 │   ├── kitty/
@@ -126,16 +130,32 @@ remote-access controls.
 
 Supporting documentation and historical inventories.
 
+### `assets/`
+
+Contains the three visual files currently used by the live desktop
+configuration:
+
+```text
+assets/
+├── wallpaper.jpg
+├── hyprlock.jpg
+└── profile.jpg
+```
+
+Hyprpaper and Hyprlock always reference these fixed paths. This keeps the
+configuration independent from whichever image from the wallpaper library is
+currently selected.
+
 ### `wallpapers/`
 
-Contains visual assets used by the desktop configuration.
+Contains the inactive wallpaper/image library.
 
 The maintainer does not claim authorship or copyright ownership of third-party
-wallpapers unless explicitly stated otherwise. No license to those images is
-granted by this repository.
+visual assets unless explicitly stated otherwise. No license to those images
+is granted by this repository.
 
 See [`wallpapers/LICENSE`](wallpapers/LICENSE) for the full third-party asset
-notice.
+notice. The notice also applies to the active images under `assets/`.
 
 ---
 
@@ -243,7 +263,7 @@ Audit all tracked-style visual assets with:
 ```bash
 cd "$HOME/dotfiles"
 
-find configs wallpapers \
+find assets wallpapers \
     -type f \
     \( -iname '*.jpg' -o \
        -iname '*.jpeg' -o \
@@ -1937,3 +1957,57 @@ Before merging a substantial change:
 
 A stable `main` should represent a configuration that can be deployed on a
 fresh Arch installation without relying on undocumented manual state.
+
+---
+
+## 22. Changing wallpapers and visual assets
+
+The repository separates the image library from the assets currently used by
+Hyprland:
+
+```text
+wallpapers/               inactive image library
+
+assets/
+├── wallpaper.jpg         Hyprpaper desktop wallpaper
+├── hyprlock.jpg          Hyprlock background
+└── profile.jpg           Hyprlock profile image
+```
+
+The Hyprland configuration always references the fixed files under `assets/`.
+Changing an image therefore does not require editing the configuration.
+
+To change the desktop wallpaper using a graphical file manager:
+
+1. Move `assets/wallpaper.jpg` back into `wallpapers/`, giving it a useful
+   archive name if necessary.
+2. Select a JPEG from `wallpapers/`.
+3. Move it into `assets/`.
+4. Rename it exactly to `wallpaper.jpg`.
+5. Restart Hyprpaper or log out and back in.
+
+Use the same procedure for:
+
+```text
+assets/hyprlock.jpg
+assets/profile.jpg
+```
+
+Replacement files must genuinely use the expected image format. Do not rename
+a PNG or WebP file to `.jpg` without converting it to JPEG first.
+
+Prefer moving files rather than copying them so large image assets are not
+stored twice in the Git repository.
+
+After changing an active asset:
+
+```bash
+cd "$HOME/dotfiles"
+
+git status --short
+git diff --check
+```
+
+Git may report the operation as a rename or as an add/delete pair depending on
+how the files were moved. Either representation is normal; review the intended
+files before committing.

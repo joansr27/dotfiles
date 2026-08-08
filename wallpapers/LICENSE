@@ -1,8 +1,10 @@
 Third-Party Visual Assets Notice — No License Grant
 
-The image files contained in this directory are third-party visual assets used
-by the workstation configuration, including wallpapers, backgrounds, avatars,
-and profile-style images.
+This notice applies to the third-party image files stored under both
+`wallpapers/` and `assets/` in this repository.
+
+The `wallpapers/` directory contains the image library, while `assets/`
+contains the visual files currently selected by the workstation configuration.
 
 The maintainer of this repository does not claim authorship, copyright
 ownership, or exclusive rights over these images unless a specific file is

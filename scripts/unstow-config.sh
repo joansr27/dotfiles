@@ -8,13 +8,13 @@ stow_root="$repo_root/configs"
 target="$HOME"
 
 if [[ -z "$package" ]]; then
-    echo "Uso: $0 <paquete>" >&2
-    echo "Ejemplo: $0 waybar" >&2
+    echo "Usage: $0 <package>" >&2
+    echo "Example: $0 waybar" >&2
     exit 1
 fi
 
 if [[ ! -d "$stow_root/$package" ]]; then
-    echo "Error: no existe el paquete Stow '$package'." >&2
+    echo "Error: Stow package does not exist: '$package'." >&2
     exit 1
 fi
 
@@ -25,4 +25,4 @@ stow \
     --target="$target" \
     "$package"
 
-echo "Enlaces eliminados para: $package"
+echo "Links removed for: $package"

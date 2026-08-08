@@ -9,7 +9,7 @@ check_path() {
     if [[ -e "$path" ]]; then
         printf '[OK] %s\n' "$path"
     else
-        printf '[ERROR] No existe: %s\n' "$path" >&2
+        printf '[ERROR] Path does not exist: %s\n' "$path" >&2
         errors=$((errors + 1))
     fi
 }
@@ -18,9 +18,9 @@ check_command() {
     local command_name="$1"
 
     if command -v "$command_name" >/dev/null 2>&1; then
-        printf '[OK] Comando: %s\n' "$command_name"
+        printf '[OK] Command: %s\n' "$command_name"
     else
-        printf '[WARN] Comando no encontrado: %s\n' "$command_name"
+        printf '[WARN] Command not found: %s\n' "$command_name"
     fi
 }
 
@@ -52,7 +52,7 @@ check_command swappy
 if command -v hyprctl >/dev/null 2>&1 &&
    [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
     echo
-    echo "Errores de configuración de Hyprland:"
+    echo "Hyprland configuration errors:"
     hyprctl configerrors || errors=$((errors + 1))
 fi
 

@@ -8,8 +8,8 @@ official_resolver="$repo_root/scripts/resolve-packages.sh"
 aur_resolver="$repo_root/scripts/resolve-aur-packages.sh"
 
 if [[ -z "$profile" ]]; then
-    echo "Uso: $0 <perfil>" >&2
-    echo "Ejemplo: $0 omen" >&2
+    echo "Usage: $0 <profile>" >&2
+    echo "Example: $0 omen" >&2
     exit 1
 fi
 
@@ -27,7 +27,7 @@ trap cleanup EXIT
 
 errors=0
 
-echo "=== Paquetes oficiales ==="
+echo "=== Official packages ==="
 
 while IFS= read -r package; do
     [[ -n "$package" ]] || continue
@@ -35,13 +35,13 @@ while IFS= read -r package; do
     if pacman -Si "$package" >/dev/null 2>&1; then
         printf '[OK] %s\n' "$package"
     else
-        printf '[ERROR] No encontrado en Pacman: %s\n' "$package" >&2
+        printf '[ERROR] Not found in Pacman: %s\n' "$package" >&2
         errors=$((errors + 1))
     fi
 done < "$official_tmp"
 
 echo
-echo "=== Paquetes AUR ==="
+echo "=== AUR packages ==="
 
 if command -v yay >/dev/null 2>&1; then
     while IFS= read -r package; do
@@ -50,16 +50,16 @@ if command -v yay >/dev/null 2>&1; then
         if yay -Si "$package" >/dev/null 2>&1; then
             printf '[OK] %s\n' "$package"
         else
-            printf '[ERROR] No encontrado en AUR: %s\n' "$package" >&2
+            printf '[ERROR] Not found in AUR: %s\n' "$package" >&2
             errors=$((errors + 1))
         fi
     done < "$aur_tmp"
 else
-    echo "[WARN] yay no está instalado; no se puede validar AUR."
+    echo "[WARN] yay is not installed; AUR packages cannot be validated."
 fi
 
 echo
-echo "=== Duplicados entre Pacman y AUR ==="
+echo "=== Duplicates between Pacman and AUR ==="
 
 duplicates="$(
     comm -12 \
@@ -71,7 +71,7 @@ if [[ -n "$duplicates" ]]; then
     echo "$duplicates" >&2
     errors=$((errors + 1))
 else
-    echo "[OK] No hay duplicados."
+    echo "[OK] No duplicates found."
 fi
 
 exit "$errors"

@@ -6,19 +6,19 @@ stow_root="$repo_root/configs"
 target="$HOME"
 
 if ! command -v stow >/dev/null 2>&1; then
-    echo "Error: GNU Stow no está instalado." >&2
-    echo "Instálalo con: sudo pacman -S stow" >&2
+    echo "Error: GNU Stow is not installed." >&2
+    echo "Install it with: sudo pacman -S stow" >&2
     exit 1
 fi
 
 if [[ ! -d "$stow_root" ]]; then
-    echo "Error: no existe $stow_root" >&2
+    echo "Error: path does not exist: $stow_root" >&2
     exit 1
 fi
 
-echo "Repositorio: $repo_root"
-echo "Directorio Stow: $stow_root"
-echo "Destino: $target"
+echo "Repository: $repo_root"
+echo "Stow directory: $stow_root"
+echo "Target: $target"
 echo
 
 status=0
@@ -36,9 +36,9 @@ for package_dir in "$stow_root"/*; do
         --dir="$stow_root" \
         --target="$target" \
         "$package"; then
-        echo "Simulación correcta: $package"
+        echo "Simulation successful: $package"
     else
-        echo "Conflicto detectado: $package" >&2
+        echo "Conflict detected: $package" >&2
         status=1
     fi
 

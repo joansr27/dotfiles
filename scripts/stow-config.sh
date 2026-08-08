@@ -8,23 +8,23 @@ stow_root="$repo_root/configs"
 target="$HOME"
 
 if [[ -z "$package" ]]; then
-    echo "Uso: $0 <paquete>" >&2
-    echo "Ejemplo: $0 hypr" >&2
+    echo "Usage: $0 <package>" >&2
+    echo "Example: $0 hypr" >&2
     exit 1
 fi
 
 if ! command -v stow >/dev/null 2>&1; then
-    echo "Error: GNU Stow no está instalado." >&2
+    echo "Error: GNU Stow is not installed." >&2
     exit 1
 fi
 
 if [[ ! -d "$stow_root/$package" ]]; then
-    echo "Error: no existe el paquete Stow '$package'." >&2
-    echo "Ruta esperada: $stow_root/$package" >&2
+    echo "Error: Stow package does not exist: '$package'." >&2
+    echo "Expected path: $stow_root/$package" >&2
     exit 1
 fi
 
-echo "Simulando enlaces para: $package"
+echo "Simulating links for: $package"
 
 stow \
     --simulate \
@@ -34,7 +34,7 @@ stow \
     "$package"
 
 echo
-read -r -p "Aplicar estos enlaces [y/N]? " answer
+read -r -p "Apply these links [y/N]? " answer
 
 case "$answer" in
     y|Y|yes|YES)
@@ -46,10 +46,10 @@ case "$answer" in
             "$package"
         ;;
     *)
-        echo "Operación cancelada."
+        echo "Operation cancelled."
         exit 0
         ;;
 esac
 
 echo
-echo "Paquete enlazado: $package"
+echo "Stow package linked: $package"
