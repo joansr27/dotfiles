@@ -129,7 +129,7 @@ remote-access controls.
 
 ### `docs/`
 
-Supporting documentation and historical inventories.
+Supporting documentation and dual boot guide.
 
 ### `assets/`
 
@@ -391,8 +391,6 @@ Resolve and validate:
 ./scripts/validate-packages.sh amd-current
 ./scripts/validate-packages.sh omen
 ```
-
-Historical inventories under `docs/` are not active manifests.
 
 ---
 
