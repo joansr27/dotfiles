@@ -11,7 +11,7 @@ Tailscale + Sunshine remote-access workflow.
 
 > [!TIP]
 > Planning to reproduce this workstation on a Windows machine? Read
-> **[Windows 11 + Arch Linux dual boot with `archinstall`](archinstall-windows-dual-boot.md)**
+> **[Windows 11 + Arch Linux dual boot with `archinstall`](docs/archinstall-windows-dual-boot.md)**
 > before installing packages or modifying the Windows disk. It documents the
 > complete partitioning, LUKS, Btrfs, GRUB, BitLocker, SDDM, NVIDIA, Timeshift,
 > and repository-restoration procedure.
@@ -36,10 +36,11 @@ Tailscale + Sunshine remote-access workflow.
 14. [Remote access: Tailscale + Sunshine + iPad](#14-remote-access-tailscale--sunshine--ipad)
 15. [Idle locking and session security](#15-idle-locking-and-session-security)
 16. [XDG user directories](#16-xdg-user-directories)
-17. [Git workflow](#17-git-workflow)
-18. [Timeshift snapshots and system recovery](#18-timeshift-snapshots-and-system-recovery)
-19. [Diagnostics](#19-diagnostics)
-20. [Maintenance checklist](#20-maintenance-checklist)
+17. [Initial GitHub and SSH configuration](#17-initial-github-and-ssh-configuration)
+18. [Git workflow](#18-git-workflow)
+19. [Timeshift snapshots and system recovery](#19-timeshift-snapshots-and-system-recovery)
+20. [Diagnostics](#20-diagnostics)
+21. [Maintenance checklist](#21-maintenance-checklist)
 
 ---
 
@@ -68,7 +69,6 @@ The repository is **not** a full home-directory backup.
 
 ```text
 dotfiles/
-├── archinstall-windows-dual-boot.md
 ├── configs/
 │   ├── hypr/
 │   ├── kitty/
@@ -77,6 +77,7 @@ dotfiles/
 │   ├── wofi/
 │   └── xdg-user-dirs/
 ├── docs/
+│   └── archinstall-windows-dual-boot.md
 ├── install/
 │   └── install.sh
 ├── packages/
@@ -359,7 +360,7 @@ xdg-mime query default application/pdf
 ## 8. Installing a new computer
 
 For Windows dual boot, follow
-[`archinstall-windows-dual-boot.md`](archinstall-windows-dual-boot.md).
+[`archinstall-windows-dual-boot.md`](docs/archinstall-windows-dual-boot.md).
 
 The minimum base system must have:
 
@@ -374,7 +375,7 @@ Clone:
 
 ```bash
 git clone \
-    https://github.com/joansr27/dotfiles.git \
+    https://github.com/<OWNER>/<REPOSITORY>.git \
     "$HOME/dotfiles"
 
 cd "$HOME/dotfiles"
@@ -833,7 +834,678 @@ Stow-managed files.
 
 ---
 
-## 17. Git workflow
+## 17. Initial GitHub and SSH configuration
+
+GitHub authentication is global to the user account, but that does **not**
+make the entire home directory part of this Git repository. Git tracks the
+working tree whose metadata is stored in `~/dotfiles/.git`.
+
+The procedures below deliberately use an SSH authentication key for Git
+operations and GitHub CLI (`gh`) for account authentication.
+
+### 17.1 Existing original repository: authenticate a new machine and reconnect the clone
+
+Use this procedure when the GitHub repository already exists and
+`~/dotfiles` is already a clone of that repository.
+
+#### Install Git, GitHub CLI, and OpenSSH
+
+```bash
+sudo pacman -S --needed git github-cli openssh
+```
+
+Verify:
+
+```bash
+git --version
+gh --version
+ssh -V
+```
+
+#### Configure global Git identity and defaults
+
+Set the commit identity:
+
+```bash
+git config --global user.name "YOUR NAME"
+git config --global user.email "YOUR_GITHUB_EMAIL"
+```
+
+A GitHub `noreply` address can be used instead of a personal email address.
+
+Recommended defaults:
+
+```bash
+git config --global init.defaultBranch main
+git config --global pull.ff only
+git config --global push.default simple
+```
+
+Review:
+
+```bash
+git config --global --list
+```
+
+These settings apply to Git globally. They do not define the filesystem
+boundary of any repository.
+
+#### Authenticate GitHub CLI and generate the SSH key
+
+Run:
+
+```bash
+gh auth login
+```
+
+Select:
+
+```text
+GitHub.com
+→ SSH
+→ Generate a new SSH key: Yes
+```
+
+When prompted for an SSH-key passphrase:
+
+- enter a passphrase for additional protection; or
+- deliberately press Enter twice if an unencrypted private key is acceptable
+  for the machine's threat model and passwordless Git use is preferred.
+
+Use a generic, recognizable key title such as:
+
+```text
+Arch Linux laptop
+```
+
+When asked how GitHub CLI should authenticate, choose:
+
+```text
+Paste an authentication token
+```
+
+Create a classic Personal Access Token in the GitHub web interface:
+
+```text
+GitHub
+→ Settings
+→ Developer settings
+→ Personal access tokens
+→ Tokens (classic)
+→ Generate new token
+→ Generate new token (classic)
+```
+
+Give the token a generic device note such as:
+
+```text
+Arch Linux laptop
+```
+
+Prefer a finite expiration period.
+
+For this GitHub CLI + SSH-key setup, enable:
+
+```text
+repo
+read:org
+gist
+admin:public_key
+```
+
+The first three cover the normal GitHub CLI token requirements for repository
+and account operations. `admin:public_key` is needed here because GitHub CLI
+is being allowed to upload/manage the generated SSH authentication key.
+
+Generate the token, copy it once, and paste it directly into the hidden
+`gh auth login` prompt.
+
+Never save the token in this repository, a shell script, a dotfile, shell
+history, or a plaintext notes file.
+
+#### Verify GitHub CLI and the uploaded SSH key
+
+Run:
+
+```bash
+gh auth status
+gh ssh-key list
+```
+
+The newly generated SSH authentication key should be visible in the account.
+
+Test SSH:
+
+```bash
+ssh -T git@github.com
+```
+
+On the first connection, OpenSSH may show GitHub's host-key fingerprint and
+ask whether to trust the host. Before entering `yes`, compare the displayed
+fingerprint with the current official fingerprints published by GitHub:
+
+```text
+GitHub Docs
+→ Authentication
+→ Keeping your account and data secure
+→ GitHub's SSH key fingerprints
+```
+
+Only accept the host if the fingerprint matches the official documentation.
+
+A successful test ends with a message equivalent to:
+
+```text
+You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+GitHub intentionally does not provide an interactive SSH shell.
+
+#### Verify that only `~/dotfiles` is the repository working tree
+
+Do **not** run `git init` when `~/dotfiles` was cloned from the existing
+repository.
+
+Check:
+
+```bash
+cd "$HOME/dotfiles"
+
+git rev-parse --show-toplevel
+readlink -f "$(git rev-parse --git-dir)"
+```
+
+Expected structure:
+
+```text
+/home/<USER>/dotfiles
+/home/<USER>/dotfiles/.git
+```
+
+Now make sure the home directory itself was never initialized as a repository:
+
+```bash
+test -d "$HOME/.git" \
+    && echo "WARNING: ~/.git exists" \
+    || echo "OK: ~/.git does not exist"
+```
+
+Also:
+
+```bash
+cd "$HOME"
+
+git rev-parse --show-toplevel 2>/dev/null \
+    || echo "OK: HOME is outside any Git repository"
+```
+
+Never run:
+
+```bash
+git init
+```
+
+directly in `$HOME`.
+
+#### Change the existing clone from HTTPS to SSH
+
+Inspect the current remote:
+
+```bash
+cd "$HOME/dotfiles"
+git remote -v
+```
+
+A repository cloned before GitHub authentication may use an HTTPS URL.
+
+Change `origin` to the existing repository's SSH URL:
+
+```bash
+git remote set-url origin \
+    git@github.com:<OWNER>/<REPOSITORY>.git
+```
+
+Verify:
+
+```bash
+git remote -v
+```
+
+Expected form:
+
+```text
+origin  git@github.com:<OWNER>/<REPOSITORY>.git (fetch)
+origin  git@github.com:<OWNER>/<REPOSITORY>.git (push)
+```
+
+#### Connect local `main` to `origin/main`
+
+Fetch remote metadata:
+
+```bash
+git fetch origin
+```
+
+Switch to the local main branch:
+
+```bash
+git switch main
+```
+
+Inspect tracking:
+
+```bash
+git branch -vv
+```
+
+The local branch should contain:
+
+```text
+[origin/main]
+```
+
+If it does not:
+
+```bash
+git branch --set-upstream-to=origin/main main
+```
+
+Verify:
+
+```bash
+git rev-parse --abbrev-ref --symbolic-full-name '@{u}'
+```
+
+Expected:
+
+```text
+origin/main
+```
+
+Test read access:
+
+```bash
+git fetch origin
+```
+
+Test write authentication without sending a new commit:
+
+```bash
+git push --dry-run origin main
+```
+
+A synchronized repository normally reports:
+
+```text
+Everything up-to-date
+```
+
+#### Final boundary check
+
+Run:
+
+```bash
+cd "$HOME/dotfiles"
+
+git rev-parse --show-toplevel
+git remote -v
+git branch -vv
+git status --short
+
+test -d "$HOME/.git" \
+    && echo "WARNING: ~/.git exists" \
+    || echo "OK: HOME is not a Git repository"
+```
+
+The intended relationship is:
+
+```text
+GitHub account
+    │
+    └── SSH authentication key
+            │
+            ▼
+        github.com
+            │
+            ▼
+       origin/main
+            ▲
+            │
+       local main
+            │
+            ▼
+      ~/dotfiles
+            │
+            └── .git/
+```
+
+Global GitHub authentication does not make `$HOME` a Git working tree.
+
+Stow-managed paths such as:
+
+```text
+~/.config/hypr
+```
+
+can point into `~/dotfiles` while the Git repository itself remains strictly
+rooted at `~/dotfiles`.
+
+### 17.2 Cloned repository: publish a modified version in a new personal GitHub repository
+
+Use this procedure when the repository was cloned from another GitHub account,
+will now be customized, and should be published as a new repository owned by
+the current GitHub account.
+
+The GitHub/SSH authentication procedure is intentionally repeated so this
+section can be followed independently.
+
+#### Configure GitHub authentication
+
+Install:
+
+```bash
+sudo pacman -S --needed git github-cli openssh
+```
+
+Configure the Git identity:
+
+```bash
+git config --global user.name "YOUR NAME"
+git config --global user.email "YOUR_GITHUB_EMAIL"
+
+git config --global init.defaultBranch main
+git config --global pull.ff only
+git config --global push.default simple
+```
+
+Authenticate:
+
+```bash
+gh auth login
+```
+
+Select:
+
+```text
+GitHub.com
+→ SSH
+→ Generate a new SSH key: Yes
+→ Enter an SSH-key passphrase, or intentionally leave it blank
+→ Give the key a generic device title
+→ Paste an authentication token
+```
+
+Create the classic Personal Access Token from:
+
+```text
+GitHub
+→ Settings
+→ Developer settings
+→ Personal access tokens
+→ Tokens (classic)
+→ Generate new token
+```
+
+Enable:
+
+```text
+repo
+read:org
+gist
+admin:public_key
+```
+
+Paste the generated token only into the `gh auth login` prompt.
+
+Verify:
+
+```bash
+gh auth status
+gh ssh-key list
+ssh -T git@github.com
+```
+
+On the first SSH connection, verify GitHub's host-key fingerprint against
+GitHub's current official documentation before accepting it.
+
+#### Verify the local repository boundary
+
+Before changing remotes:
+
+```bash
+cd "$HOME/dotfiles"
+
+git rev-parse --show-toplevel
+readlink -f "$(git rev-parse --git-dir)"
+git status
+```
+
+The top-level working tree must be:
+
+```text
+/home/<USER>/dotfiles
+```
+
+and `$HOME/.git` should not exist:
+
+```bash
+test -d "$HOME/.git" \
+    && echo "WARNING: ~/.git exists" \
+    || echo "OK: ~/.git does not exist"
+```
+
+#### Recommended method: preserve the original Git history
+
+A clone already contains a `.git` directory. Therefore, `git init` is **not**
+required if the original commit history should be kept.
+
+Inspect the existing remote:
+
+```bash
+git remote -v
+```
+
+Rename the original repository from `origin` to `upstream`:
+
+```bash
+git remote rename origin upstream
+```
+
+This preserves the original project as a reference and frees the conventional
+name `origin` for the new personal repository.
+
+Verify:
+
+```bash
+git remote -v
+```
+
+Before publishing, inspect the repository carefully:
+
+```bash
+git status --short
+git diff --check
+git diff
+git ls-files | less
+```
+
+Review the tracked tree for:
+
+- Private SSH keys.
+- Authentication tokens.
+- Passwords.
+- Recovery keys.
+- Private application state.
+- Personal documents.
+- Machine-specific information that should not be public.
+
+Create the new repository from the existing local Git repository:
+
+```bash
+gh repo create <NEW_REPOSITORY_NAME> \
+    --public \
+    --source=. \
+    --remote=origin \
+    --push
+```
+
+The new repository becomes `origin`, while the original source repository
+remains `upstream`.
+
+Verify:
+
+```bash
+git remote -v
+git branch -vv
+git status
+```
+
+The expected model is:
+
+```text
+origin    → new personal repository
+upstream  → original repository
+```
+
+Normal future work uses:
+
+```bash
+git pull --ff-only origin main
+git push origin main
+```
+
+The original repository can still be inspected with:
+
+```bash
+git fetch upstream
+```
+
+Do not merge upstream changes automatically; review them first.
+
+#### Alternative: deliberately start a completely new Git history
+
+Use this only when the new repository should have no commit-history
+relationship with the original project.
+
+Do not run `git init` directly over the clone's existing `.git` metadata.
+Move the original metadata out of the repository first:
+
+```bash
+cd "$HOME/dotfiles"
+
+git rev-parse --show-toplevel
+git status
+
+mv \
+    "$HOME/dotfiles/.git" \
+    "$HOME/dotfiles-original-git-backup"
+```
+
+This leaves the working files in place while preserving the original Git
+metadata outside the new repository.
+
+Initialize the new history:
+
+```bash
+cd "$HOME/dotfiles"
+
+git init
+git branch -m main
+```
+
+Immediately verify the repository boundary:
+
+```bash
+git rev-parse --show-toplevel
+
+test -d "$HOME/.git" \
+    && echo "WARNING: ~/.git exists" \
+    || echo "OK: ~/.git does not exist"
+```
+
+Review the complete tree before staging:
+
+```bash
+git status --short
+```
+
+Stage:
+
+```bash
+git add .
+```
+
+Inspect everything that will enter the first commit:
+
+```bash
+git diff --cached --check
+git diff --cached --stat
+git diff --cached --name-only
+git diff --cached
+```
+
+Search staged filenames for common secret indicators:
+
+```bash
+git diff --cached --name-only |
+    grep -Ei \
+    'secret|token|credential|password|private|\.env|id_rsa|id_ed25519' \
+    || true
+```
+
+Every match must be reviewed manually.
+
+Create the new initial commit:
+
+```bash
+git commit -m "Initial dotfiles import"
+```
+
+Create and push the new repository:
+
+```bash
+gh repo create <NEW_REPOSITORY_NAME> \
+    --public \
+    --source=. \
+    --remote=origin \
+    --push
+```
+
+Verify:
+
+```bash
+git remote -v
+git branch -vv
+git status
+git rev-parse --show-toplevel
+```
+
+Confirm once more that the home directory itself is not a repository:
+
+```bash
+test -d "$HOME/.git" \
+    && echo "WARNING: ~/.git exists" \
+    || echo "OK: HOME is not a Git repository"
+```
+
+Keep:
+
+```text
+~/dotfiles-original-git-backup
+```
+
+until the new GitHub repository has been checked and the old history is
+definitely no longer required.
+
+Only then, if appropriate:
+
+```bash
+rm -rf "$HOME/dotfiles-original-git-backup"
+```
+
+---
+
+## 18. Git workflow
 
 Update `main`:
 
@@ -895,14 +1567,14 @@ git push -u origin HEAD
 
 ---
 
-## 18. Timeshift snapshots and system recovery
+## 19. Timeshift snapshots and system recovery
 
 Timeshift is the system rollback layer for this workstation.
 
 It protects the Linux system state. It does **not** replace backups of personal
 files and it does not protect against physical SSD failure.
 
-### 18.1 Review Timeshift
+### 19.1 Review Timeshift
 
 List snapshots:
 
@@ -927,7 +1599,7 @@ btrfs: Quotas are not enabled
 is informational; Timeshift does not require qgroups to create normal Btrfs
 snapshots.
 
-### 18.2 Create a snapshot
+### 19.2 Create a snapshot
 
 Before a risky package/configuration change:
 
@@ -951,14 +1623,14 @@ Recommended checkpoints include:
 - Before large package removals.
 - Before risky system configuration edits.
 
-### 18.3 Review what a snapshot is for
+### 19.3 Review what a snapshot is for
 
 Timeshift is designed primarily for system files/settings. Do not assume that
 documents in `$HOME` are your backup just because a Timeshift snapshot exists.
 
 Keep personal backups separately.
 
-### 18.4 Restore while Arch still boots
+### 19.4 Restore while Arch still boots
 
 List:
 
@@ -982,7 +1654,7 @@ Read the source/target mappings before accepting the restore.
 
 Reboot when requested.
 
-### 18.5 If the graphical desktop is broken but TTY works
+### 19.5 If the graphical desktop is broken but TTY works
 
 Use:
 
@@ -999,7 +1671,7 @@ sudo timeshift --restore
 
 This is useful after a broken desktop, graphics, or configuration update.
 
-### 18.6 If Arch no longer boots
+### 19.6 If Arch no longer boots
 
 Boot a Linux live environment in UEFI mode.
 
@@ -1012,9 +1684,9 @@ For this encrypted Btrfs installation:
    restore, or `arch-chroot` for manual repair.
 
 The complete disk/chroot procedure is documented in
-[`archinstall-windows-dual-boot.md`](archinstall-windows-dual-boot.md).
+[`archinstall-windows-dual-boot.md`](docs/archinstall-windows-dual-boot.md).
 
-### 18.7 Git rollback versus Timeshift rollback
+### 19.7 Git rollback versus Timeshift rollback
 
 Use Git when only repository-managed configuration is wrong:
 
@@ -1028,7 +1700,7 @@ kernel, driver, package, or system-wide configuration change.
 
 ---
 
-## 19. Diagnostics
+## 20. Diagnostics
 
 Repository:
 
@@ -1092,7 +1764,7 @@ sudo timeshift --list
 
 ---
 
-## 20. Maintenance checklist
+## 21. Maintenance checklist
 
 Before a major Arch update:
 
