@@ -2,6 +2,7 @@
 set -uo pipefail
 
 errors=0
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 check_path() {
     local path="$1"
@@ -26,6 +27,7 @@ check_command() {
 
 check_path "$HOME/.config/hypr/hyprland.conf"
 check_path "$HOME/.config/hypr/hyprpaper.conf"
+check_path "$HOME/.config/hypr/hyprlock.conf"
 check_path "$HOME/.config/hypr/hypridle.conf"
 check_path "$HOME/.config/waybar/config.jsonc"
 check_path "$HOME/.config/waybar/style.css"
@@ -35,8 +37,13 @@ check_path "$HOME/.config/wofi/config"
 check_path "$HOME/.config/wofi/style.css"
 check_path "$HOME/.config/user-dirs.conf"
 check_path "$HOME/.config/user-dirs.dirs"
+check_path "$repo_root/assets/wallpaper.jpg"
+check_path "$repo_root/assets/hyprlock.jpg"
+check_path "$repo_root/assets/profile.jpg"
 
 check_command hyprctl
+check_command hyprpaper
+check_command hyprlock
 check_command hypridle
 check_command waybar
 check_command kitty

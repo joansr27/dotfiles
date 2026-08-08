@@ -41,6 +41,7 @@ Tailscale + Sunshine remote-access workflow.
 19. [Timeshift snapshots and system recovery](#19-timeshift-snapshots-and-system-recovery)
 20. [Diagnostics](#20-diagnostics)
 21. [Maintenance checklist](#21-maintenance-checklist)
+22. [Changing wallpapers and visual assets](#22-changing-wallpapers-and-visual-assets)
 
 ---
 
@@ -526,6 +527,8 @@ Core services:
 sudo systemctl enable --now NetworkManager
 sudo systemctl enable --now bluetooth
 sudo systemctl enable --now firewalld
+sudo systemctl enable --now cronie
+sudo systemctl enable --now power-profiles-daemon
 sudo systemctl enable sddm
 ```
 
