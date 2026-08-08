@@ -29,6 +29,12 @@
 **/.config/chromium/
 **/.config/BraveSoftware/
 
+# GitHub CLI authentication/configuration
+**/.config/gh/
+
+# Sunshine configuration, credentials and pairing state
+**/.config/sunshine/
+
 # Common credential containers
 *.pem
 *.p12

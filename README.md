@@ -126,6 +126,17 @@ remote-access controls.
 
 Supporting documentation and historical inventories.
 
+### `wallpapers/`
+
+Contains visual assets used by the desktop configuration.
+
+The maintainer does not claim authorship or copyright ownership of third-party
+wallpapers unless explicitly stated otherwise. No license to those images is
+granted by this repository.
+
+See [`wallpapers/LICENSE`](wallpapers/LICENSE) for the full third-party asset
+notice.
+
 ---
 
 ## 3. Security and privacy model
@@ -174,6 +185,90 @@ git diff --cached |
     grep -Ei \
     'api[_-]?key|access[_-]?token|client[_-]?secret|password'
 ```
+
+### Scan the current repository for common secret formats
+
+A staged-diff check protects future commits, but it does not inspect files that
+are already committed.
+
+Run:
+
+```bash
+cd "$HOME/dotfiles"
+
+secret_pattern='BEGIN (OPENSSH|RSA|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]+|tskey-[A-Za-z0-9-]+|xox[baprs]-[A-Za-z0-9-]+'
+
+git grep -nEI "$secret_pattern" -- . || true
+```
+
+No output is the expected result.
+
+This catches several common private-key, GitHub, Tailscale, AWS, and Slack
+credential formats, but it is not proof that every possible secret format is
+absent.
+
+### Scan the complete Git history
+
+Removing a credential in a later commit does not remove it from older commits.
+
+Scan every reachable commit:
+
+```bash
+cd "$HOME/dotfiles"
+
+secret_pattern='BEGIN (OPENSSH|RSA|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]+|tskey-[A-Za-z0-9-]+|xox[baprs]-[A-Za-z0-9-]+'
+
+git rev-list --all |
+while IFS= read -r commit; do
+    git grep -nEI "$secret_pattern" "$commit" -- . 2>/dev/null || true
+done |
+sort -u
+```
+
+No output is the expected result.
+
+If a real credential is ever found in Git history, revoke or rotate the
+credential **before** attempting to rewrite Git history.
+
+### Review image metadata
+
+Images may contain metadata such as camera/device information, timestamps,
+owner names, or GPS coordinates.
+
+The repository installs ExifTool through the `perl-image-exiftool` Arch
+package.
+
+Audit all tracked-style visual assets with:
+
+```bash
+cd "$HOME/dotfiles"
+
+find configs wallpapers \
+    -type f \
+    \( -iname '*.jpg' -o \
+       -iname '*.jpeg' -o \
+       -iname '*.png' -o \
+       -iname '*.webp' \) \
+    -exec exiftool -a -G1 -s {} +
+```
+
+Pay particular attention to:
+
+```text
+GPSLatitude
+GPSLongitude
+GPSPosition
+Make
+Model
+SerialNumber
+OwnerName
+Artist
+DateTimeOriginal
+Location
+```
+
+Metadata is not automatically sensitive. Attribution, copyright, and license
+metadata may be useful and should not be removed blindly.
 
 ### AUR trust boundary
 
@@ -739,19 +834,29 @@ cd "$HOME/dotfiles"
 ./scripts/remote-on.sh
 ```
 
-Current implementation:
+The helper performs several local safety checks before Sunshine is exposed:
 
-```bash
-sudo systemctl start tailscaled
-systemctl --user start app-dev.lizardbyte.app.Sunshine
-```
+1. It refuses to continue unless `firewalld` is active.
+2. It starts `tailscaled` if necessary.
+3. It waits for the Tailscale backend to reach the `Running` state.
+4. It verifies that the workstation has a Tailscale IPv4 address.
+5. Only then does it start the Sunshine user service.
+6. If startup fails, it cleans up the Tailscale daemon when the helper was the
+   process that started it.
 
 Verify:
 
 ```bash
+systemctl is-active firewalld
 tailscale status
+tailscale ip -4
 systemctl --user is-active app-dev.lizardbyte.app.Sunshine
 ```
+
+> [!IMPORTANT]
+> These local checks do not replace the Tailscale access-control policy.
+> Restriction to the selected iPad/client is enforced by the Tailscale grants
+> configured in the admin console.
 
 #### Connect from iPad
 

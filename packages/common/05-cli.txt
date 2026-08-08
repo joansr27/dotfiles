@@ -10,6 +10,7 @@ htop
 jq
 less
 lm_sensors
+perl-image-exiftool
 ripgrep
 stow
 tree

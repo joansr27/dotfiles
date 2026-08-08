@@ -2177,19 +2177,28 @@ cd "$HOME/dotfiles"
 ./scripts/remote-on.sh
 ```
 
-The current script starts:
+The helper performs local safety checks before starting Sunshine:
 
-```text
-tailscaled
-Sunshine user service
-```
+1. `firewalld` must already be active.
+2. `tailscaled` is started if necessary.
+3. The helper waits for the Tailscale backend to reach the `Running` state.
+4. A Tailscale IPv4 address must be available.
+5. Sunshine is started only after those checks succeed.
+6. If startup fails, Tailscale is stopped again when it was started by the
+   helper itself.
 
 Verify if needed:
 
 ```bash
+systemctl is-active firewalld
 tailscale status
+tailscale ip -4
 systemctl --user is-active app-dev.lizardbyte.app.Sunshine
 ```
+
+These checks are defense in depth. They do **not** replace the Tailscale grants
+configured in the admin console. The grants remain the mechanism that limits
+Sunshine access to the explicitly selected client.
 
 #### On the iPad
 

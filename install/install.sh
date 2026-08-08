@@ -205,30 +205,29 @@ done
 
 cat <<'NEXT'
 
-Instalación base completada.
+Base installation completed.
 
-El instalador NO habilita servicios automáticamente.
+The installer does NOT enable services automatically.
 
-Revisa y habilita manualmente lo necesario:
+Review the system, then enable the required core services:
 
     sudo systemctl enable --now NetworkManager
     sudo systemctl enable --now bluetooth
-    sudo systemctl enable --now sddm
     sudo systemctl enable --now firewalld
+    sudo systemctl enable --now cronie
+    sudo systemctl enable --now power-profiles-daemon
+    sudo systemctl enable sddm
 
-Para Tailscale:
+Do not configure or enable Tailscale or Sunshine yet.
 
-    sudo systemctl enable --now tailscaled
-    sudo tailscale up
+First confirm that SDDM, Hyprland, graphics, audio, networking, and local input
+work correctly. Remote access should be configured only afterward by following
+the remote-access section in README.md.
 
-Sunshine debe configurarse y probarse antes de habilitarlo:
-
-    systemctl --user start app-dev.lizardbyte.app.Sunshine
-
-Validación:
+Validation:
 
     ./scripts/check-desktop-config.sh
     ./scripts/stow-preflight.sh
-    ./scripts/validate-packages.sh <perfil>
+    ./scripts/validate-packages.sh <profile>
 
 NEXT

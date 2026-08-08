@@ -1,0 +1,38 @@
+Third-Party Visual Assets Notice — No License Grant
+
+The image files contained in this directory are third-party visual assets used
+by the workstation configuration, including wallpapers, backgrounds, avatars,
+and profile-style images.
+
+The maintainer of this repository does not claim authorship, copyright
+ownership, or exclusive rights over these images unless a specific file is
+explicitly identified otherwise.
+
+Some images may have been downloaded, saved, or captured from material
+available on the Internet. Their inclusion in this repository does not imply
+that they are in the public domain, that the maintainer owns them, or that the
+maintainer has authority to grant a copyright license for them.
+
+Accordingly:
+
+1. No copyright license to the image files in this directory is granted by this
+   repository.
+2. Copyright and other rights in each image remain with the respective author,
+   photographer, artist, publisher, or other rights holder.
+3. Anyone who copies, redistributes, modifies, or otherwise uses these images
+   is responsible for determining whether that use is permitted by the
+   applicable rights holder and applicable law.
+4. Any license that may apply to the repository's source code, configuration
+   files, scripts, or documentation does not automatically apply to the images
+   in this directory.
+5. The absence of attribution or source information for an image must not be
+   interpreted as a statement that the image is copyright-free or freely
+   redistributable.
+
+These assets are included so that the workstation configuration can reproduce
+the intended visual setup. If a rights holder believes that an image has been
+included improperly, they may contact the repository maintainer and request
+its removal.
+
+This notice does not alter or override any rights that apply to the underlying
+image files.
