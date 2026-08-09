@@ -24,6 +24,8 @@ window#waybar.pinned {
 #time-date,
 #sound,
 #connections,
+#hardware,
+#display,
 #batteries {
     background-color: @bubble;
     border-radius: 100px;
@@ -55,7 +57,6 @@ window#waybar.pinned {
 #network,
 #bluetooth,
 #pulseaudio,
-#power-profiles-daemon,
 #backlight,
 #battery,
 #workspaces button {
@@ -68,6 +69,9 @@ window#waybar.pinned {
 
 /* Custom modules */
 
+#custom-hardware-status,
+#custom-display-mode,
+#custom-power-profile,
 #custom-sysmenu,
 #custom-lock,
 #custom-sleep,
@@ -83,7 +87,6 @@ window#waybar.pinned {
 
     transition: all 0.3s ease;
 }
-
 /* Wi-Fi and Bluetooth state */
 
 #network,
@@ -116,6 +119,8 @@ window#waybar.pinned {
     opacity: 0;
 }
 
+#custom-display-mode:hover,
+#custom-power-profile:hover,
 #custom-lock:hover,
 #custom-sleep:hover,
 #custom-exit:hover,
@@ -124,7 +129,6 @@ window#waybar.pinned {
 #custom-nightlight:hover {
     opacity: 0.5;
 }
-
 /* Tooltips */
 
 tooltip {

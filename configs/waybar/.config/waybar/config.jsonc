@@ -28,6 +28,8 @@
     "modules-right": [
         "group/sound",
         "group/connections",
+        "group/hardware",
+        "group/display",
         "group/batteries"
     ],
 
@@ -77,11 +79,28 @@
         ]
     },
 
+
+    "group/hardware": {
+        "orientation": "inherit",
+        "class": "bubble",
+        "modules": [
+            "custom/hardware-status"
+        ]
+    },
+
+    "group/display": {
+        "orientation": "inherit",
+        "class": "bubble",
+        "modules": [
+            "custom/display-mode"
+        ]
+    },
+
     "group/batteries": {
         "orientation": "inherit",
         "class": "bubble",
         "modules": [
-            "power-profiles-daemon",
+            "custom/power-profile",
             "backlight",
             "battery"
         ]
@@ -115,14 +134,27 @@
         "format-wifi": "<span size='160%'>\uf1eb</span>",
         "format-disconnected": "<span size='160%'>\uf1eb</span>",
         "format-disabled": "<span size='160%'>&#xf092d;</span>",
-        "format-ethernet": "<span size='160%'>\uf796</span>"
+        "format-ethernet": "<span size='160%'>\uf796</span>",
+
+        "tooltip-format-wifi": "{essid}",
+        "tooltip-format-ethernet": "Ethernet",
+        "tooltip-format-disconnected": "Wi-Fi disconnected",
+        "tooltip-format-disabled": "Wi-Fi disabled"
     },
 
     "bluetooth": {
         "format-connected": "<span size='120%'>\uf294</span>",
         "format-on": "<span size='120%'>\uf294</span>",
         "format-off": "<span size='130%'>&#xf00b2;</span>",
-        "format-disabled": "<span size='130%'>&#xf00b2;</span>"
+        "format-disabled": "<span size='130%'>&#xf00b2;</span>",
+
+        "tooltip-format-connected": "Connected:\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "• {device_alias}",
+        "tooltip-format-enumerate-connected-battery": "• {device_alias}  ({device_battery_percentage}%)",
+
+        "tooltip-format-on": "Bluetooth on\nNo devices connected",
+        "tooltip-format-off": "Bluetooth off",
+        "tooltip-format-disabled": "Bluetooth disabled"
     },
 
     // =========================================================
@@ -131,6 +163,7 @@
 
     "backlight": {
         "format": "<span size='120%'>{icon}</span>",
+	"tooltip-format": "Screen brightness",
         "format-icons": [
             "",
             "",
@@ -144,8 +177,44 @@
         ]
     },
 
+    "custom/hardware-status": {
+        "format": "{text}",
+        "return-type": "json",
+        "exec": "~/dotfiles/scripts/hardware-status.sh",
+        "interval": 5,
+        "hide-empty-text": true,
+        "tooltip": true
+    },
+
+    "custom/display-mode": {
+        "format": "<span size='160%'>󰍹</span> <span rise='2000'>{text}</span>",
+        "return-type": "json",
+        "exec": "~/dotfiles/scripts/display-mode-select.sh --status",
+        "interval": 10,
+        "signal": 13,
+        "on-click": "~/dotfiles/scripts/display-mode-select.sh",
+        "tooltip": true
+    },
+
+    "custom/power-profile": {
+        "format": "<span size='130%'>{text}</span>",
+        "return-type": "json",
+        "exec": "~/dotfiles/scripts/power-profile-select.sh --status",
+        "interval": 5,
+        "signal": 14,
+        "on-click": "~/dotfiles/scripts/power-profile-cycle.sh",
+        "on-click-right": "~/dotfiles/scripts/power-profile-select.sh",
+        "hide-empty-text": true,
+        "tooltip": true
+    },
+
     "battery": {
         "format": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span>",
+
+        "format-charging": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
+        "format-plugged": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
+        "format-full": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
+
         "format-icons": [
             "",
             "",
@@ -155,17 +224,17 @@
         ]
     },
 
-    "power-profiles-daemon": {
-        "format": "<span size='130%'>{icon}</span>",
-        "tooltip": true,
-        "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
-        "format-icons": {
-            "default": "\uf24e",
-            "performance": "\uf135",
-            "balanced": "\uf219",
-            "power-saver": "\uf06c"
-        }
-    },
+    //"power-profiles-daemon": {
+    //    "format": "<span size='130%'>{icon}</span>",
+    //    "tooltip": true,
+    //    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    //    "format-icons": {
+    //        "default": "\uf24e",
+    //        "performance": "\uf135",
+    //        "balanced": "\uf219",
+    //        "power-saver": "\uf06c"
+    //    }
+    //},
 
     "pulseaudio": {
         "format": "<span rise='3000'>{volume}%</span> <span size='160%'>{icon}</span>",
