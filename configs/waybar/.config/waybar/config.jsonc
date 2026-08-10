@@ -317,7 +317,7 @@
         "interval": "once",
         "signal": 12,
 
-        "on-click": "~/.config/waybar/nightlight_toggle.sh",
+        "on-click": "~/dotfiles/scripts/nightlight-toggle.sh",
 
         "format-icons": {
             "active": "<span size='130%'>󰖔</span>",
