@@ -618,13 +618,18 @@ Commit only intended files.
 Use the repository helper for official Arch packages:
 
 ```bash
-./scripts/add-package.sh --package firefox --manifest common/07-applications.txt
+./scripts/add-package.sh \
+    --package firefox \
+    --manifest common/07-applications.txt
 ```
 
 For a feature manifest that should be enabled for multiple profiles:
 
 ```bash
-./scripts/add-package.sh     --package package-name     --manifest features/example.txt     --profiles amd-current,omen
+./scripts/add-package.sh \
+    --package package-name \
+    --manifest features/example.txt \
+    --profiles amd-current,omen
 ```
 
 Only packages available from an enabled Pacman repository are accepted.

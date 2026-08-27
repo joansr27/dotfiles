@@ -182,8 +182,10 @@ Tailscale and WayVNC are installed only as optional packages and remain
 unconfigured.
 
 First confirm that SDDM, Hyprland, graphics, audio, networking, and local input
-work correctly. Remote access should be configured only afterward by following
-the remote-access section in README.md.
+work correctly.
+
+Remote access is a separate future project. See the remote-access policy in
+README.md for the current repository scope.
 
 Validation:
 

@@ -122,13 +122,18 @@ done
 Add an official package with:
 
 ```bash
-./scripts/add-package.sh     --package package-name     --manifest common/07-applications.txt
+./scripts/add-package.sh \
+    --package package-name \
+    --manifest common/07-applications.txt
 ```
 
 For a new feature shared by multiple profiles:
 
 ```bash
-./scripts/add-package.sh     --package package-name     --manifest features/example.txt     --profiles amd-current,omen
+./scripts/add-package.sh \
+    --package package-name \
+    --manifest features/example.txt \
+    --profiles amd-current,omen
 ```
 
 The helper:
