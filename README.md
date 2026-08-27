@@ -1,9 +1,9 @@
 # Arch Linux / Hyprland Dotfiles
 
 A reproducible Arch Linux workstation configuration built around Hyprland,
-GNU Stow, machine-specific hardware profiles, explicit package manifests,
-validation scripts, Timeshift recovery, and an intentionally restricted
-Tailscale + Sunshine remote-access workflow.
+GNU Stow, machine-specific hardware profiles, official Arch package manifests,
+validation scripts, and Timeshift recovery. Remote desktop configuration is
+deliberately kept outside the current repository.
 
 > [!IMPORTANT]
 > Clone this repository at `~/dotfiles`. Several scripts and configuration
@@ -33,7 +33,7 @@ Tailscale + Sunshine remote-access workflow.
 11. [Installing and recording packages](#11-installing-and-recording-packages)
 12. [Removing packages](#12-removing-packages)
 13. [Adding application configuration to Stow](#13-adding-application-configuration-to-stow)
-14. [Remote access: Tailscale + Sunshine + iPad](#14-remote-access-tailscale--sunshine--ipad)
+14. [Remote access policy](#14-remote-access-policy)
 15. [Idle locking and session security](#15-idle-locking-and-session-security)
 16. [XDG user directories](#16-xdg-user-directories)
 17. [Initial GitHub and SSH configuration](#17-initial-github-and-ssh-configuration)
@@ -52,7 +52,7 @@ The repository aims to:
 1. Reconstruct the workstation on a clean Arch Linux installation.
 2. Keep selected configuration under version control.
 3. Separate common configuration from hardware-specific configuration.
-4. Keep official and AUR package manifests explicit.
+4. Keep package selection restricted to enabled official Arch repositories.
 5. Deploy configuration through GNU Stow rather than unmanaged links.
 6. Detect Stow conflicts before changing the live desktop.
 7. Validate packages before migration.
@@ -60,7 +60,7 @@ The repository aims to:
 9. Keep risky service activation explicit.
 10. Avoid storing secrets or private application state.
 11. Provide predictable rollback paths with Git and Timeshift.
-12. Keep remote access disabled when it is not required.
+12. Keep remote desktop implementation separate from the base workstation configuration.
 
 The repository is **not** a full home-directory backup.
 
@@ -89,11 +89,8 @@ dotfiles/
 │   ├── common/
 │   ├── features/
 │   ├── hardware/
-│   ├── profiles/
-│   └── aur/
+│   └── profiles/
 ├── scripts/
-│   ├── remote-on.sh
-│   ├── remote-off.sh
 │   └── ...
 ├── wallpapers/
 ├── .gitignore
@@ -171,7 +168,7 @@ private keys
 password databases
 API keys
 Tailscale auth keys
-Sunshine credentials
+remote-access credentials
 Wi-Fi passwords
 browser profiles/cookies
 recovery codes
@@ -291,22 +288,6 @@ Location
 Metadata is not automatically sensitive. Attribution, copyright, and license
 metadata may be useful and should not be removed blindly.
 
-### AUR trust boundary
-
-AUR PKGBUILDs execute build logic under the current user.
-
-Before accepting unusual AUR changes:
-
-```bash
-yay -Si package-name
-yay -G package-name
-nvim package-name/PKGBUILD
-```
-
-Review source URLs, checksums, `prepare()`, `build()`, `package()`, and install
-scripts. Never run `makepkg` as root and do not bypass integrity/signature
-checks merely to force a build to succeed.
-
 ---
 
 ## 4. GNU Stow configuration deployment
@@ -360,37 +341,53 @@ blindly.
 
 ## 5. Package manifest architecture
 
-Official packages resolve from:
+All packages managed by this repository must be available from an enabled
+official Arch Linux Pacman repository.
+
+Package manifests live under:
 
 ```text
-packages/profiles/<profile>.txt
+packages/
+├── common/
+├── features/
+├── hardware/
+└── profiles/
 ```
 
-AUR packages resolve from:
-
-```text
-packages/aur/profiles/<profile>.txt
-```
-
-Profiles:
+Current machine profiles:
 
 ```text
 amd-current
 omen
 ```
 
-Resolve and validate:
+Resolve a profile with:
 
 ```bash
 ./scripts/resolve-packages.sh amd-current
 ./scripts/resolve-packages.sh omen
+```
 
-./scripts/resolve-aur-packages.sh amd-current
-./scripts/resolve-aur-packages.sh omen
+Validate a profile with:
 
+```bash
 ./scripts/validate-packages.sh amd-current
 ./scripts/validate-packages.sh omen
 ```
+
+Validation enforces three invariants:
+
+- every package manifest is alphabetically sorted;
+- every resolved package exists in an enabled Pacman repository;
+- no foreign installed packages are present.
+
+Therefore, on a repository-compliant installation:
+
+```bash
+pacman -Qm
+```
+
+must produce no output.
 
 ---
 
@@ -501,7 +498,6 @@ Inspect:
 
 ```bash
 ./scripts/resolve-packages.sh omen
-./scripts/resolve-aur-packages.sh omen
 ./scripts/validate-packages.sh omen
 ```
 
@@ -530,7 +526,9 @@ sudo systemctl enable --now power-profiles-daemon
 sudo systemctl enable sddm
 ```
 
-Remote access is configured later, after the local desktop works.
+Remote desktop is not configured by this repository. External KVM hardware
+such as PiKVM is the preferred future architecture. `tailscale` and `wayvnc`
+are retained as optional official packages but remain unconfigured.
 
 ---
 
@@ -617,38 +615,28 @@ Commit only intended files.
 
 ## 11. Installing and recording packages
 
-Prefer:
+Use the repository helper for official Arch packages:
 
 ```bash
-./scripts/add-package.sh
+./scripts/add-package.sh --package firefox --manifest common/07-applications.txt
 ```
 
-Examples:
+For a feature manifest that should be enabled for multiple profiles:
 
 ```bash
-./scripts/add-package.sh \
-    --source official \
-    --package firefox \
-    --manifest common/07-applications.txt
+./scripts/add-package.sh     --package package-name     --manifest features/example.txt     --profiles amd-current,omen
 ```
 
-AUR:
+Only packages available from an enabled Pacman repository are accepted.
 
-```bash
-./scripts/add-package.sh \
-    --source aur \
-    --package package-name \
-    --manifest common.txt
-```
+The helper automatically sorts modified package manifests and profile files.
 
-Validate both profiles after manifest changes:
+After changing the package set, validate both profiles:
 
 ```bash
 ./scripts/validate-packages.sh amd-current
 ./scripts/validate-packages.sh omen
 ```
-
-Never record the same package in official and AUR manifests.
 
 ---
 
@@ -715,206 +703,40 @@ Deploy:
 
 ---
 
-## 14. Remote access: Tailscale + Sunshine + iPad
+## 14. Remote access policy
 
-Remote access is intentionally **off by default** and should be configured only
-after Hyprland, graphics, audio, SDDM, and the local input stack are stable.
+Remote desktop is intentionally **not implemented by this repository**.
 
-### Architecture
+The preferred architecture is an external hardware KVM solution such as
+**PiKVM**. This keeps remote keyboard, video, and mouse access separate from
+the Arch desktop software stack.
 
-```text
-iPad
-  ├─ Tailscale iPadOS VPN
-  └─ Moonlight
-         │
-         │ encrypted Tailscale/WireGuard path
-         ▼
-Arch workstation
-  ├─ tailscaled
-  └─ Sunshine
-```
+PiKVM configuration is outside the current scope of this repository. It will
+be documented separately after the hardware workflow has been tested.
 
-No Sunshine router port forwarding is required.
-
-### One-time host setup
-
-Authenticate Tailscale once:
-
-```bash
-sudo systemctl start tailscaled
-sudo tailscale up
-tailscale status
-tailscale ip -4
-```
-
-Configure Sunshine locally by starting it:
-
-```bash
-systemctl --user start app-dev.lizardbyte.app.Sunshine
-```
-
-Open on the workstation:
+The package profiles currently retain two official Arch packages as optional
+software building blocks:
 
 ```text
-https://localhost:47990
+tailscale
+wayvnc
 ```
 
-A self-signed certificate warning is expected for the verified local Sunshine
-URL. Do not treat certificate warnings on unrelated sites as safe.
+They are intentionally left **unconfigured**. Their installation does not mean
+that a software remote-desktop workflow is currently supported or maintained
+by this repository.
 
-Create a strong Sunshine username/password.
+There are currently:
 
-Recommended Sunshine security:
+- no remote-access helper scripts;
+- no WayVNC configuration;
+- no repository-managed Tailscale remote-desktop policy;
+- no repository-managed remote-access credentials;
+- no remote-desktop router port-forwarding instructions.
 
-```text
-UPnP: disabled
-Web UI: localhost/pc only
-No public external IP configuration
-No router forwarding
-```
-
-If desired and supported by the clients, require Sunshine's own stream
-encryption as defense in depth; Tailscale already encrypts the network path.
-
-### Tailscale admin console
-
-Enable **Device approval** and approve only known devices.
-
-For a strict streaming-only policy, use Tailscale **grants** to allow only the
-selected iPad Tailscale IP to reach the Sunshine host ports.
-
-Example:
-
-```jsonc
-{
-  "hosts": {
-    "stream-host": "100.HOST.IP.ADDRESS",
-    "ipad-client": "100.IPAD.IP.ADDRESS"
-  },
-
-  "grants": [
-    {
-      "src": ["ipad-client"],
-      "dst": ["stream-host"],
-      "ip": [
-        "tcp:47984",
-        "tcp:47989",
-        "tcp:48010",
-        "udp:47998",
-        "udp:47999",
-        "udp:48000",
-        "udp:48002"
-      ]
-    }
-  ]
-}
-```
-
-Do not copy real Tailscale addresses into this public repository.
-
-### iPad one-time setup
-
-Install:
-
-- Tailscale.
-- Moonlight Game Streaming.
-
-Open Tailscale and allow iPadOS to add the VPN configuration.
-
-Sign in to the same tailnet and approve the iPad from the Tailscale admin
-console if device approval is enabled.
-
-### Pair Moonlight
-
-Start host remote access:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-on.sh
-```
-
-On iPad:
-
-1. Enable Tailscale.
-2. Open Moonlight.
-3. Add the Arch workstation using its Tailscale `100.x.y.z` IP or MagicDNS
-   name if it is not discovered automatically.
-4. Moonlight presents a PIN.
-5. On the workstation, open the local Sunshine Web UI.
-6. Enter the PIN on Sunshine's PIN page.
-7. Return to Moonlight and start the desired application/desktop.
-
-### Daily workflow
-
-#### Turn remote access on
-
-From Hyprland:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-on.sh
-```
-
-The helper performs several local safety checks before Sunshine is exposed:
-
-1. It refuses to continue unless `firewalld` is active.
-2. It starts `tailscaled` if necessary.
-3. It waits for the Tailscale backend to reach the `Running` state.
-4. It verifies that the workstation has a Tailscale IPv4 address.
-5. Only then does it start the Sunshine user service.
-6. If startup fails, it cleans up the Tailscale daemon when the helper was the
-   process that started it.
-
-Verify:
-
-```bash
-systemctl is-active firewalld
-tailscale status
-tailscale ip -4
-systemctl --user is-active app-dev.lizardbyte.app.Sunshine
-```
-
-> [!IMPORTANT]
-> These local checks do not replace the Tailscale access-control policy.
-> Restriction to the selected iPad/client is enforced by the Tailscale grants
-> configured in the admin console.
-
-#### Connect from iPad
-
-1. Open Tailscale.
-2. Confirm the VPN is connected.
-3. Open Moonlight.
-4. Select the workstation.
-5. Start the stream.
-
-#### Turn remote access off
-
-After the session:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-off.sh
-```
-
-Current implementation stops Sunshine and then `tailscaled`.
-
-Optionally disconnect Tailscale on the iPad.
-
-> If the Tailscale/Sunshine stream is your only control path, `remote-off.sh`
-> will intentionally terminate that connection.
-
-### Security checks
-
-Do not enable Sunshine UPnP.
-
-Do not forward Sunshine ports on the router.
-
-Do not commit:
-
-- Tailscale auth keys.
-- Real private tailnet policy data that should not be public.
-- Sunshine credentials.
-- Sunshine private keys/certificates.
+A software approach may be evaluated in the future, but it should be treated
+as a separate project and documented only after its security model has been
+tested.
 
 ---
 
@@ -1877,10 +1699,9 @@ journalctl -b -u sddm --no-pager
 
 Remote access:
 
-```bash
-tailscale status
-systemctl --user status app-dev.lizardbyte.app.Sunshine --no-pager
-```
+No remote-desktop service is configured by this repository. External KVM
+hardware such as PiKVM is the preferred future approach. `tailscale` and
+`wayvnc` remain optional, unconfigured packages.
 
 Timeshift:
 
@@ -1900,7 +1721,6 @@ sudo timeshift \
     --comments "Before Arch upgrade"
 
 sudo pacman -Syu
-yay -Syu
 ```
 
 Do not perform partial Arch upgrades.

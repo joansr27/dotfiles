@@ -1,77 +1,119 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export LC_ALL=C
+
 profile="${1:-}"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-official_resolver="$repo_root/scripts/resolve-packages.sh"
-aur_resolver="$repo_root/scripts/resolve-aur-packages.sh"
+packages_root="$repo_root/packages"
+resolver="$repo_root/scripts/resolve-packages.sh"
+
+usage() {
+    cat <<USAGE
+Usage:
+
+    $0 <profile>
+
+Example:
+
+    $0 omen
+USAGE
+}
 
 if [[ -z "$profile" ]]; then
-    echo "Usage: $0 <profile>" >&2
-    echo "Example: $0 omen" >&2
+    usage >&2
     exit 1
 fi
 
-official_tmp="$(mktemp)"
-aur_tmp="$(mktemp)"
+if [[ ! -x "$resolver" ]]; then
+    echo "Missing or non-executable resolver: $resolver" >&2
+    exit 1
+fi
 
-cleanup() {
-    rm -f "$official_tmp" "$aur_tmp"
-}
+profile_file="$packages_root/profiles/$profile.txt"
 
-trap cleanup EXIT
-
-"$official_resolver" "$profile" > "$official_tmp"
-"$aur_resolver" "$profile" > "$aur_tmp"
+if [[ ! -f "$profile_file" ]]; then
+    echo "Profile does not exist: $profile_file" >&2
+    exit 1
+fi
 
 errors=0
 
-echo "=== Official packages ==="
+echo "=== Manifest sorting ==="
 
-while IFS= read -r package; do
+while IFS= read -r -d '' file; do
+    relative="${file#"$repo_root"/}"
+
+    if sort -c "$file" 2>/dev/null; then
+        printf '[OK] %s\n' "$relative"
+    else
+        printf '[ERROR] Not sorted: %s\n' "$relative" >&2
+        errors=$((errors + 1))
+    fi
+done < <(
+    find "$packages_root" \
+        -type f \
+        -name '*.txt' \
+        -print0
+)
+
+echo
+echo "=== Resolving profile: $profile ==="
+
+packages_text="$("$resolver" "$profile")"
+
+if [[ -z "$packages_text" ]]; then
+    echo "[ERROR] Profile resolved to an empty package list." >&2
+    errors=$((errors + 1))
+    packages=()
+else
+    mapfile -t packages < <(
+        printf '%s\n' "$packages_text"
+    )
+fi
+
+echo
+echo "=== Official package availability ==="
+
+for package in "${packages[@]}"; do
     [[ -n "$package" ]] || continue
 
     if pacman -Si "$package" >/dev/null 2>&1; then
         printf '[OK] %s\n' "$package"
     else
-        printf '[ERROR] Not found in Pacman: %s\n' "$package" >&2
+        printf \
+            '[ERROR] Not found in enabled Pacman repositories: %s\n' \
+            "$package" >&2
         errors=$((errors + 1))
     fi
-done < "$official_tmp"
+done
 
 echo
-echo "=== AUR packages ==="
+echo "=== Foreign installed packages ==="
 
-if command -v yay >/dev/null 2>&1; then
-    while IFS= read -r package; do
-        [[ -n "$package" ]] || continue
+mapfile -t foreign_packages < <(
+    pacman -Qqm 2>/dev/null || true
+)
 
-        if yay -Si "$package" >/dev/null 2>&1; then
-            printf '[OK] %s\n' "$package"
-        else
-            printf '[ERROR] Not found in AUR: %s\n' "$package" >&2
-            errors=$((errors + 1))
-        fi
-    done < "$aur_tmp"
+if (( ${#foreign_packages[@]} == 0 )); then
+    echo "[OK] No foreign packages installed."
 else
-    echo "[WARN] yay is not installed; AUR packages cannot be validated."
+    for package in "${foreign_packages[@]}"; do
+        printf '[ERROR] Foreign package installed: %s\n' \
+            "$package" >&2
+        errors=$((errors + 1))
+    done
 fi
 
 echo
-echo "=== Duplicates between Pacman and AUR ==="
+echo "=== Validation result ==="
 
-duplicates="$(
-    comm -12 \
-        <(sort -u "$official_tmp") \
-        <(sort -u "$aur_tmp")
-)"
-
-if [[ -n "$duplicates" ]]; then
-    echo "$duplicates" >&2
-    errors=$((errors + 1))
+if (( errors == 0 )); then
+    echo "[OK] Package validation passed."
 else
-    echo "[OK] No duplicates found."
+    printf '[ERROR] Validation failed with %d error(s).\n' \
+        "$errors" >&2
 fi
 
 exit "$errors"

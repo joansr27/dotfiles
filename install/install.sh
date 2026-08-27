@@ -6,7 +6,6 @@ profile="${1:-}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 official_resolver="$repo_root/scripts/resolve-packages.sh"
-aur_resolver="$repo_root/scripts/resolve-aur-packages.sh"
 machine_selector="$repo_root/scripts/select-machine.sh"
 stow_preflight="$repo_root/scripts/stow-preflight.sh"
 
@@ -54,7 +53,6 @@ fi
 
 for script in \
     "$official_resolver" \
-    "$aur_resolver" \
     "$machine_selector" \
     "$stow_preflight"
 do
@@ -106,47 +104,6 @@ echo
 echo "=== Installing official packages ==="
 
 sudo pacman -S --needed "${official_packages[@]}"
-
-if ! command -v yay >/dev/null 2>&1; then
-    echo
-    echo "=== Installing yay ==="
-
-    build_root="$(mktemp -d)"
-
-    cleanup_yay() {
-        rm -rf "$build_root"
-    }
-
-    trap cleanup_yay EXIT
-
-    git clone \
-        https://aur.archlinux.org/yay.git \
-        "$build_root/yay"
-
-    (
-        cd "$build_root/yay"
-        makepkg -si --needed
-    )
-
-    cleanup_yay
-    trap - EXIT
-fi
-
-aur_packages_text="$("$aur_resolver" "$profile")"
-aur_packages=()
-
-if [[ -n "$aur_packages_text" ]]; then
-    mapfile -t aur_packages < <(
-        printf '%s\n' "$aur_packages_text"
-    )
-fi
-
-if (( ${#aur_packages[@]} > 0 )); then
-    echo
-    echo "=== Installing AUR packages ==="
-
-    yay -S --needed "${aur_packages[@]}"
-fi
 
 echo
 echo "=== Selecting machine profile ==="
@@ -218,7 +175,11 @@ Review the system, then enable the required core services:
     sudo systemctl enable --now power-profiles-daemon
     sudo systemctl enable sddm
 
-Do not configure or enable Tailscale or Sunshine yet.
+Remote desktop is not configured by this repository.
+
+External KVM hardware such as PiKVM is the preferred future approach.
+Tailscale and WayVNC are installed only as optional packages and remain
+unconfigured.
 
 First confirm that SDDM, Hyprland, graphics, audio, networking, and local input
 work correctly. Remote access should be configured only afterward by following

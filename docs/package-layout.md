@@ -3,9 +3,20 @@
 This document summarizes how package manifests are organized. The complete
 operational workflow is documented in `README.md`.
 
-## Official packages
+## Package source policy
 
-Official Arch Linux repository packages are stored under:
+All packages managed by this repository must be available from an enabled
+official Arch Linux Pacman repository.
+
+A compliant installation must satisfy:
+
+```bash
+pacman -Qm
+```
+
+with no output.
+
+## Package manifests
 
 ```text
 packages/
@@ -19,7 +30,7 @@ packages/
 
 Packages shared by all supported machines.
 
-The files are grouped by responsibility:
+Current manifests:
 
 ```text
 00-base.txt
@@ -37,22 +48,28 @@ The files are grouped by responsibility:
 
 ### `features/`
 
-Optional or purpose-specific package groups that may be reused by several
-machine profiles.
+Optional or purpose-specific package groups reused by one or more machine
+profiles.
 
-Examples:
+Current manifests include:
 
 ```text
 remote-access.txt
 science-development.txt
 ```
 
+`remote-access.txt` currently contains the official packages `tailscale` and
+`wayvnc`.
+
+Neither package is configured for remote desktop by this repository. External
+KVM hardware such as PiKVM is the preferred future remote-access architecture.
+
 ### `hardware/`
 
-Drivers, microcode, graphics stacks, and utilities tied to a machine or
-hardware family.
+Drivers, microcode, graphics stacks, and utilities tied to a particular
+machine or hardware family.
 
-Current files:
+Current manifests:
 
 ```text
 amd-laptop.txt
@@ -61,9 +78,9 @@ omen-intel-nvidia.txt
 
 ### `profiles/`
 
-Each profile is a list of manifest paths relative to `packages/`.
+Each profile lists manifest paths relative to `packages/`.
 
-Examples:
+Current profiles:
 
 ```text
 amd-current.txt
@@ -76,76 +93,63 @@ Resolve a profile with:
 ./scripts/resolve-packages.sh omen
 ```
 
-## AUR packages
-
-AUR manifests are stored under:
-
-```text
-packages/aur/
-├── common.txt
-├── optional/
-└── profiles/
-```
-
-### `common.txt`
-
-AUR packages shared by supported machines.
-
-### `optional/`
-
-Optional AUR feature groups.
-
-### `profiles/`
-
-Each AUR profile lists manifest paths relative to `packages/aur/`.
-
-Resolve an AUR profile with:
+Validate it with:
 
 ```bash
-./scripts/resolve-aur-packages.sh omen
+./scripts/validate-packages.sh omen
 ```
 
-## Source-of-truth rule
+## Sorting invariant
 
-Active package state must be represented only under `packages/`.
+Every `.txt` file under `packages/` must remain alphabetically sorted using the
+C locale.
 
-Historical inventories under `docs/` are records of previous system states and
-are not read by the installer.
+The package helper automatically sorts package and profile manifests that it
+modifies.
 
-Do not create a new root-level monolithic `packages.txt`.
+Manual validation:
+
+```bash
+find packages -type f -name '*.txt' -print0 |
+while IFS= read -r -d '' file; do
+    LC_ALL=C sort -c "$file" ||
+        printf '[ERROR] Not sorted: %s\n' "$file"
+done
+```
 
 ## Adding packages
 
-Preferred command:
+Add an official package with:
 
 ```bash
-./scripts/add-package.sh \
-    --source official \
-    --package package-name \
-    --manifest common/07-applications.txt
+./scripts/add-package.sh     --package package-name     --manifest common/07-applications.txt
 ```
 
-AUR example:
+For a new feature shared by multiple profiles:
 
 ```bash
-./scripts/add-package.sh \
-    --source aur \
-    --package package-name \
-    --manifest common.txt
+./scripts/add-package.sh     --package package-name     --manifest features/example.txt     --profiles amd-current,omen
 ```
 
-For a new feature manifest:
+The helper:
 
-```bash
-./scripts/add-package.sh \
-    --source official \
-    --package package-name \
-    --manifest features/example.txt \
-    --profiles amd-current,omen
-```
+1. validates the package with Pacman;
+2. rejects packages absent from enabled official repositories;
+3. prevents duplicate placement across package manifests;
+4. installs the package unless `--no-install` is used;
+5. updates the requested manifest;
+6. updates requested profile files;
+7. sorts modified manifests;
+8. resolves affected profiles;
+9. displays the Git diff.
 
-The script validates package origin, prevents official/AUR duplication,
-installs the package unless requested otherwise, updates manifests, sorts
-entries, resolves affected profiles, and displays the Git diff.
+It never stages, commits, or pushes automatically.
 
-It does not stage, commit, or push automatically.
+## Source-of-truth rule
+
+Active package state is represented only under `packages/`.
+
+Do not create a root-level monolithic `packages.txt`.
+
+Do not add foreign-package or alternate-package-manager manifests to the active
+package tree.

@@ -32,8 +32,8 @@
 # GitHub CLI authentication/configuration
 **/.config/gh/
 
-# Sunshine configuration, credentials and pairing state
-**/.config/sunshine/
+# WayVNC configuration, credentials and private keys
+**/.config/wayvnc/
 
 # Common credential containers
 *.pem

@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export LC_ALL=C
+
 usage() {
     cat <<'USAGE'
 Usage:
 
   add-package.sh \
-      --source <official|aur> \
       --package <package-name> \
       --manifest <relative-manifest-path> \
       [--profiles <profile1,profile2>] \
@@ -15,42 +16,37 @@ Usage:
 
 Examples:
 
-  # Official package in an existing common manifest
+  # Add an official package to an existing common manifest
   ./scripts/add-package.sh \
-      --source official \
       --package firefox \
       --manifest common/07-applications.txt
 
-  # Official package in a new feature used by both machines
+  # Add an official package to a feature used by both machines
   ./scripts/add-package.sh \
-      --source official \
       --package example \
       --manifest features/example.txt \
       --profiles amd-current,omen
 
-  # AUR package in the common AUR manifest
-  ./scripts/add-package.sh \
-      --source aur \
-      --package example-bin \
-      --manifest common.txt
-
   # Validate and record without installing on this machine
   ./scripts/add-package.sh \
       --no-install \
-      --source official \
       --package example \
       --manifest hardware/omen-intel-nvidia.txt
 
-Manifest paths are relative to:
+Manifest paths are relative to packages/ and must be inside:
 
-  official: packages/
-  aur:      packages/aur/
+  common/
+  features/
+  hardware/
+
+Only packages available from an enabled Pacman repository are accepted.
+
+All modified package manifests and profile files are sorted automatically.
 
 This script never stages, commits, or pushes changes.
 USAGE
 }
 
-source_type=""
 package_name=""
 manifest_rel=""
 profiles_csv=""
@@ -59,23 +55,27 @@ dry_run=0
 
 while (($# > 0)); do
     case "$1" in
-        --source)
-            [[ $# -ge 2 ]] || { echo "Missing value for --source" >&2; exit 1; }
-            source_type="$2"
-            shift 2
-            ;;
         --package)
-            [[ $# -ge 2 ]] || { echo "Missing value for --package" >&2; exit 1; }
+            [[ $# -ge 2 ]] || {
+                echo "Missing value for --package" >&2
+                exit 1
+            }
             package_name="$2"
             shift 2
             ;;
         --manifest)
-            [[ $# -ge 2 ]] || { echo "Missing value for --manifest" >&2; exit 1; }
+            [[ $# -ge 2 ]] || {
+                echo "Missing value for --manifest" >&2
+                exit 1
+            }
             manifest_rel="$2"
             shift 2
             ;;
         --profiles)
-            [[ $# -ge 2 ]] || { echo "Missing value for --profiles" >&2; exit 1; }
+            [[ $# -ge 2 ]] || {
+                echo "Missing value for --profiles" >&2
+                exit 1
+            }
             profiles_csv="$2"
             shift 2
             ;;
@@ -99,20 +99,10 @@ while (($# > 0)); do
     esac
 done
 
-if [[ -z "$source_type" || -z "$package_name" || -z "$manifest_rel" ]]; then
+if [[ -z "$package_name" || -z "$manifest_rel" ]]; then
     usage >&2
     exit 1
 fi
-
-case "$source_type" in
-    official|aur)
-        ;;
-    *)
-        echo "Invalid source: $source_type" >&2
-        echo "Expected: official or aur" >&2
-        exit 1
-        ;;
-esac
 
 if [[ ! "$package_name" =~ ^[A-Za-z0-9][A-Za-z0-9@._+:-]*$ ]]; then
     echo "Invalid package name: $package_name" >&2
@@ -127,122 +117,75 @@ if [[ "$manifest_rel" = /* ||
     exit 1
 fi
 
+case "$manifest_rel" in
+    common/*.txt|features/*.txt|hardware/*.txt)
+        ;;
+    *)
+        echo "Invalid manifest location: $manifest_rel" >&2
+        echo "Allowed roots: common/, features/, hardware/" >&2
+        exit 1
+        ;;
+esac
+
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+packages_root="$repo_root/packages"
+profiles_root="$packages_root/profiles"
+resolver="$repo_root/scripts/resolve-packages.sh"
+
 cd "$repo_root"
 
-current_branch="$(git branch --show-current 2>/dev/null || true)"
-
-if [[ "$current_branch" == "main" ]]; then
-    echo "[WARN] You are on main."
-    echo "Create a package branch before recording the change:"
-    echo
-    echo "  git switch -c packages/add-$package_name"
-    echo
-fi
-
-official_root="$repo_root/packages"
-aur_root="$repo_root/packages/aur"
-
-if [[ "$source_type" == "official" ]]; then
-    manifest_root="$official_root"
-    profiles_root="$official_root/profiles"
-    resolver="$repo_root/scripts/resolve-packages.sh"
-else
-    manifest_root="$aur_root"
-    profiles_root="$aur_root/profiles"
-    resolver="$repo_root/scripts/resolve-aur-packages.sh"
-fi
-
-manifest_path="$manifest_root/$manifest_rel"
+manifest_path="$packages_root/$manifest_rel"
 manifest_parent="$(dirname "$manifest_path")"
+
 parent_real="$(realpath -m "$manifest_parent")"
-root_real="$(realpath -m "$manifest_root")"
+root_real="$(realpath -m "$packages_root")"
 
 case "$parent_real/" in
     "$root_real"/*)
         ;;
     *)
-        echo "Manifest escapes its allowed root: $manifest_path" >&2
+        echo "Manifest escapes package root: $manifest_path" >&2
         exit 1
         ;;
 esac
 
-find_aur_matches() {
-    [[ -d "$aur_root" ]] || return 0
+if [[ ! -x "$resolver" ]]; then
+    echo "Missing or non-executable resolver: $resolver" >&2
+    exit 1
+fi
 
-    find "$aur_root" \
-        -type f \
-        -name '*.txt' \
-        ! -path '*/profiles/*' \
-        -print0 |
-    while IFS= read -r -d '' file; do
-        grep -qxF "$package_name" "$file" && printf '%s\n' "$file"
-    done
-}
+echo "Validating official package: $package_name"
 
-find_official_matches() {
+if ! pacman -Si "$package_name" >/dev/null 2>&1; then
+    echo \
+        "Package not found in enabled Pacman repositories: $package_name" \
+        >&2
+    exit 1
+fi
+
+find_package_matches() {
     find \
-        "$official_root/common" \
-        "$official_root/features" \
-        "$official_root/hardware" \
+        "$packages_root/common" \
+        "$packages_root/features" \
+        "$packages_root/hardware" \
         -type f \
         -name '*.txt' \
         -print0 2>/dev/null |
     while IFS= read -r -d '' file; do
-        grep -qxF "$package_name" "$file" && printf '%s\n' "$file"
+        if grep -qxF "$package_name" "$file"; then
+            printf '%s\n' "$file"
+        fi
     done
 }
 
-official_matches="$(find_official_matches)"
-aur_matches="$(find_aur_matches)"
+existing_matches="$(find_package_matches)"
 
-if [[ "$source_type" == "official" && -n "$aur_matches" ]]; then
-    echo "Package is already recorded as AUR:" >&2
-    echo "$aur_matches" >&2
+if [[ -n "$existing_matches" ]] &&
+   ! grep -qxF "$manifest_path" <<< "$existing_matches"; then
+
+    echo "Package is already recorded in another manifest:" >&2
+    echo "$existing_matches" >&2
     exit 1
-fi
-
-if [[ "$source_type" == "aur" && -n "$official_matches" ]]; then
-    echo "Package is already recorded as official:" >&2
-    echo "$official_matches" >&2
-    exit 1
-fi
-
-if [[ "$source_type" == "official" && -n "$official_matches" ]]; then
-    if ! grep -qxF "$manifest_path" <<< "$official_matches"; then
-        echo "Package is already recorded in another official manifest:" >&2
-        echo "$official_matches" >&2
-        exit 1
-    fi
-fi
-
-if [[ "$source_type" == "aur" && -n "$aur_matches" ]]; then
-    if ! grep -qxF "$manifest_path" <<< "$aur_matches"; then
-        echo "Package is already recorded in another AUR manifest:" >&2
-        echo "$aur_matches" >&2
-        exit 1
-    fi
-fi
-
-if [[ "$source_type" == "official" ]]; then
-    echo "Validating official package: $package_name"
-
-    if ! pacman -Si "$package_name" >/dev/null 2>&1; then
-        echo "Package not found in enabled Pacman repositories: $package_name" >&2
-        exit 1
-    fi
-else
-    if ! command -v yay >/dev/null 2>&1; then
-        echo "yay is required to validate AUR packages." >&2
-        exit 1
-    fi
-
-    echo "Validating AUR package: $package_name"
-
-    if ! yay -Si "$package_name" >/dev/null 2>&1; then
-        echo "Package not found by yay: $package_name" >&2
-        exit 1
-    fi
 fi
 
 profiles=()
@@ -265,11 +208,13 @@ if [[ -n "$profiles_csv" ]]; then
     done
 fi
 
+current_branch="$(git branch --show-current 2>/dev/null || true)"
+
 echo
 echo "Planned operation:"
-echo "  Source:    $source_type"
+echo "  Branch:    ${current_branch:-unknown}"
 echo "  Package:   $package_name"
-echo "  Manifest:  ${manifest_path#"$repo_root"/}"
+echo "  Manifest:  $manifest_rel"
 echo "  Install:   $([[ $install_package -eq 1 ]] && echo yes || echo no)"
 echo "  Dry run:   $([[ $dry_run -eq 1 ]] && echo yes || echo no)"
 
@@ -279,31 +224,25 @@ else
     echo "  Profiles:  no profile file will be modified"
 fi
 
-if ((dry_run == 1)); then
+if (( dry_run == 1 )); then
     exit 0
 fi
 
-if ((install_package == 1)); then
+if (( install_package == 1 )); then
     echo
-    echo "Installing: $package_name"
+    echo "Installing from official Pacman repositories: $package_name"
 
-    if [[ "$source_type" == "official" ]]; then
-        sudo pacman -S --needed "$package_name"
-    else
-        echo
-        echo "Review the PKGBUILD and changes shown by yay before accepting."
-        yay -S --needed "$package_name"
-    fi
+    sudo pacman -S --needed "$package_name"
 fi
 
-mkdir -p "$(dirname "$manifest_path")"
+mkdir -p "$manifest_parent"
 touch "$manifest_path"
 
 if ! grep -qxF "$package_name" "$manifest_path"; then
     printf '%s\n' "$package_name" >> "$manifest_path"
 fi
 
-sort -u -o "$manifest_path" "$manifest_path"
+sort -u "$manifest_path" -o "$manifest_path"
 
 for profile in "${profiles[@]}"; do
     profile_file="$profiles_root/$profile.txt"
@@ -312,7 +251,7 @@ for profile in "${profiles[@]}"; do
         printf '%s\n' "$manifest_rel" >> "$profile_file"
     fi
 
-    sort -u -o "$profile_file" "$profile_file"
+    sort -u "$profile_file" -o "$profile_file"
 done
 
 echo
@@ -323,7 +262,9 @@ referencing_profiles=()
 
 while IFS= read -r profile_file; do
     if grep -qxF "$manifest_rel" "$profile_file"; then
-        referencing_profiles+=("$(basename "$profile_file" .txt)")
+        referencing_profiles+=(
+            "$(basename "$profile_file" .txt)"
+        )
     fi
 done < <(
     find "$profiles_root" \
@@ -338,34 +279,62 @@ if ((${#referencing_profiles[@]} == 0)); then
     echo "[WARN] No profile currently references:"
     echo "  $manifest_rel"
     echo
-    echo "Use --profiles profile1,profile2 or update the profile manually."
+    echo "Use --profiles profile1,profile2 or update a profile deliberately."
 else
     echo
     echo "Profiles using this manifest:"
     printf '  %s\n' "${referencing_profiles[@]}"
 fi
 
-if [[ -x "$resolver" ]]; then
-    for profile in "${referencing_profiles[@]}"; do
-        echo
-        echo "Resolving profile: $profile"
+for profile in "${referencing_profiles[@]}"; do
+    echo
+    echo "Resolving profile: $profile"
 
-        if ! "$resolver" "$profile" | grep -qxF "$package_name"; then
-            echo "Package is not present in resolved profile: $profile" >&2
-            exit 1
-        fi
+    if ! "$resolver" "$profile" |
+         grep -qxF "$package_name"; then
 
-        echo "  [OK] $package_name"
-    done
+        echo \
+            "Package is not present in resolved profile: $profile" \
+            >&2
+        exit 1
+    fi
+
+    echo "  [OK] $package_name"
+done
+
+echo
+echo "Checking package/profile manifest sorting:"
+
+sorting_errors=0
+
+while IFS= read -r -d '' file; do
+    relative="${file#"$repo_root"/}"
+
+    if sort -c "$file" 2>/dev/null; then
+        printf '  [OK] %s\n' "$relative"
+    else
+        printf '  [ERROR] Not sorted: %s\n' "$relative" >&2
+        sorting_errors=$((sorting_errors + 1))
+    fi
+done < <(
+    find "$packages_root" \
+        -type f \
+        -name '*.txt' \
+        -print0
+)
+
+if (( sorting_errors > 0 )); then
+    exit 1
 fi
 
 echo
 echo "Git changes:"
+
 git diff -- \
     "$manifest_path" \
     "$profiles_root" || true
 
-cat <<NEXT
+cat <<'NEXT'
 
 Package registration completed.
 

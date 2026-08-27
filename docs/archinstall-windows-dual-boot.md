@@ -26,7 +26,7 @@
 16. [Validate Windows and restore BitLocker protection](#16-validate-windows-and-restore-bitlocker-protection)
 17. [Final validation checklist](#17-final-validation-checklist)
 18. [Maintenance: Arch, Windows, BitLocker, Secure Boot, and GRUB](#18-maintenance-arch-windows-bitlocker-secure-boot-and-grub)
-19. [Secure remote access with Tailscale, Sunshine, Moonlight, and iPad](#19-secure-remote-access-with-tailscale-sunshine-moonlight-and-ipad)
+19. [Remote access policy](#19-remote-access-policy)
 20. [Recovery from the Arch USB and Timeshift](#20-recovery-from-the-arch-usb-and-timeshift)
 21. [Troubleshooting](#21-troubleshooting)
 22. [References](#22-references)
@@ -54,7 +54,8 @@ The intended machine has:
 - A minimal base installation followed by the complete package/configuration deployment from this repository.
 - SDDM as the graphical login manager.
 - Hyprland as the desktop session.
-- Remote access configured only **after** the local desktop is stable.
+- Remote desktop deliberately left unconfigured; external KVM hardware such
+  as PiKVM is the preferred future approach.
 
 ### Why use a separate `/boot`?
 
@@ -1104,7 +1105,6 @@ printf 'Selected profile: %s\n' "$PROFILE"
 cd "$HOME/dotfiles"
 
 ./scripts/resolve-packages.sh "$PROFILE" | less
-./scripts/resolve-aur-packages.sh "$PROFILE" | less
 ./scripts/validate-packages.sh "$PROFILE"
 ```
 
@@ -1119,6 +1119,9 @@ G        end
 
 `[END]` means the pager reached the end; the script is not stuck.
 
+The repository supports only packages available from enabled official Arch
+Linux repositories.
+
 ### 12.4 Run the complete installer
 
 Run as the normal user:
@@ -1132,92 +1135,18 @@ Do not prepend `sudo`.
 
 The installer:
 
-1. Validates Arch.
-2. Resolves official packages.
-3. Checks Multilib.
-4. Runs a full system update.
-5. Installs official packages.
-6. Installs `yay` if required.
-7. Installs all AUR packages declared by the profile.
-8. Selects the machine-specific Hyprland profile.
-9. Creates user directories.
-10. Runs the Stow preflight.
-11. Deploys all Stow configurations.
-12. Sets default applications.
+1. validates that the host is Arch Linux;
+2. resolves the selected official package profile;
+3. checks Multilib when required;
+4. performs a full system update;
+5. installs packages through Pacman;
+6. selects the machine-specific Hyprland profile;
+7. creates required user directories;
+8. runs the Stow preflight;
+9. deploys the Stow-managed configurations;
+10. sets the default applications.
 
-Because the script uses `set -euo pipefail`, a failed AUR package can stop the script **before** machine selection and Stow deployment. Fix or deliberately defer the failing package before rerunning the installer.
-
-### 12.5 AUR integrity failures: safe handling
-
-Do not use `--skipinteg`, `--skippgpcheck`, or arbitrary checksum edits simply to make a package build.
-
-#### Example pattern: upstream file changed but remains on an official source
-
-If an AUR package reports checksum failures:
-
-1. Inspect the PKGBUILD:
-
-```bash
-yay -G PACKAGE
-cd PACKAGE
-nvim PKGBUILD
-```
-
-2. Verify that the source URLs are genuinely the expected upstream.
-3. Remove only the failed cached sources.
-4. Re-fetch and verify:
-
-```bash
-makepkg --verifysource
-```
-
-5. Compare actual hashes:
-
-```bash
-sha256sum SOURCE_FILES...
-```
-
-6. If the upstream source is independently verified and consistently changed, use:
-
-```bash
-cp PKGBUILD PKGBUILD.before-checksum-update
-updpkgsums
-diff -u PKGBUILD.before-checksum-update PKGBUILD
-makepkg --verifysource
-```
-
-Proceed only if the diff changes exactly the checksums you intended and every source passes verification.
-
-#### Example pattern: signed repository metadata disagrees with a downloaded binary
-
-If an AUR PKGBUILD verifies signed upstream metadata and the binary's hash does not match that signed metadata, **do not replace the expected hash**. Treat the package as broken/out-of-date.
-
-A practical way to finish the system installation is to remove only that package from the **local** AUR manifest temporarily, rerun the installer, and restore the manifest later.
-
-Example:
-
-```bash
-cd "$HOME/dotfiles"
-nvim packages/aur/common.txt
-```
-
-Temporarily remove the broken package line, then:
-
-```bash
-./scripts/resolve-aur-packages.sh "$PROFILE"
-./scripts/validate-packages.sh "$PROFILE"
-./install/install.sh "$PROFILE"
-```
-
-Do not commit the temporary removal unless the repository design is intentionally changing.
-
-Restore later with:
-
-```bash
-git restore packages/aur/common.txt
-```
-
-### 12.6 Stow conflicts
+### 12.5 Stow conflicts
 
 If Stow reports an existing target not owned by Stow, back it up instead of using `--adopt` blindly.
 
@@ -1239,7 +1168,7 @@ cd "$HOME/dotfiles"
 ./install/install.sh "$PROFILE"
 ```
 
-### 12.7 Validate repository deployment
+### 12.6 Validate repository deployment
 
 ```bash
 cd "$HOME/dotfiles"
@@ -1270,7 +1199,8 @@ sudo systemctl enable --now cronie
 sudo systemctl enable --now power-profiles-daemon
 ```
 
-Do not configure Tailscale or Sunshine yet. Remote access is intentionally postponed until the local desktop is fully stable.
+Remote desktop is intentionally not configured by this installation guide.
+External KVM hardware such as PiKVM is the preferred future approach.
 
 Check:
 
@@ -1771,14 +1701,6 @@ pacman -Sy package
 
 as a normal update/install workflow. Arch does not support partial upgrades.
 
-Then update AUR packages:
-
-```bash
-yay -Syu
-```
-
-Review AUR diffs and source changes before accepting them.
-
 After kernel, NVIDIA, systemd, graphics, or display-manager updates, reboot:
 
 ```bash
@@ -1907,343 +1829,38 @@ Adjust boot order only after identifying the entry numbers correctly.
 
 ---
 
-## 19. Secure remote access with Tailscale, Sunshine, Moonlight, and iPad
+## 19. Remote access policy
 
-Configure remote access **only after** local Arch + SDDM + Hyprland + graphics + audio are stable.
+Remote desktop configuration is intentionally outside the scope of this
+installation guide.
 
-### 19.1 Security model
+The preferred architecture is external KVM hardware such as **PiKVM**. This
+keeps remote keyboard, video, and mouse access separate from the Arch desktop
+software stack.
 
-The intended design is:
+PiKVM setup, networking, authentication, and operating procedures will be
+documented separately after the hardware workflow has been tested.
 
-```text
-iPad
-  ↓
-Tailscale encrypted tailnet
-  ↓
-Arch workstation
-  ↓
-Sunshine
-  ↓
-Moonlight client
-```
-
-Rules:
-
-- No router port forwarding for Sunshine.
-- Sunshine UPnP disabled.
-- Tailscale is the only remote network path.
-- Sunshine's web admin UI remains local-only whenever possible.
-- Tailscale device approval is enabled.
-- Tailscale access controls allow only the selected iPad/Tailscale IP to reach the Sunshine host ports.
-- Sunshine and Tailscale can be started/stopped on demand with repository scripts.
-
-Tailscale traffic is end-to-end encrypted with WireGuard, including when a DERP relay is used.
-
-### 19.2 One-time Arch/Tailscale setup
-
-The repository installs Tailscale as an official package and Sunshine through the AUR profile.
-
-Authenticate the host once:
-
-```bash
-sudo systemctl start tailscaled
-sudo tailscale up
-```
-
-Follow the browser authentication flow.
-
-Check:
-
-```bash
-tailscale status
-tailscale ip -4
-```
-
-Record the workstation's **Tailscale IPv4**, for example:
+The workstation profile currently retains:
 
 ```text
-100.x.y.z
+tailscale
+wayvnc
 ```
 
-Do not publish the real address in the repository.
-
-#### Keep remote access off by default
-
-If Tailscale was enabled at boot during experimentation, disable automatic startup:
-
-```bash
-sudo systemctl disable tailscaled
-```
-
-Do not enable Sunshine as a permanent user service if the intended workflow is on-demand remote access.
-
-The repository scripts will start and stop both components.
-
-### 19.3 Verify the Sunshine user unit
-
-```bash
-systemctl --user list-unit-files | grep -i sunshine
-```
-
-The current package exposes:
-
-```text
-app-dev.lizardbyte.app.Sunshine
-```
-
-Test:
-
-```bash
-systemctl --user start app-dev.lizardbyte.app.Sunshine
-systemctl --user status app-dev.lizardbyte.app.Sunshine --no-pager
-```
-
-### 19.4 Wayland/KMS capture
-
-If Sunshine cannot capture Hyprland/Wayland, inspect its logs first.
-
-Sunshine documentation notes that KMS capture on many Wayland systems can require `CAP_SYS_ADMIN`.
-
-Check the executable:
-
-```bash
-command -v sunshine
-readlink -f "$(command -v sunshine)"
-getcap "$(readlink -f "$(command -v sunshine)")"
-```
-
-Only if required for capture:
-
-```bash
-sudo setcap cap_sys_admin+p "$(readlink -f "$(command -v sunshine)")"
-```
-
-This is a powerful capability. Apply it only to the verified Sunshine binary and re-check after package replacement/upgrades because file capabilities can be lost when binaries are replaced.
-
-### 19.5 Configure Sunshine locally
-
-With Sunshine running, open **on the Arch workstation itself**:
-
-```text
-https://localhost:47990
-```
-
-The browser may report:
-
-```text
-ERR_CERT_AUTHORITY_INVALID
-```
-
-Sunshine uses a self-signed certificate by default. The warning is expected **only when you have verified that the address is exactly your own `localhost`/loopback Sunshine service**.
-
-Do not generalize this behavior to arbitrary websites.
-
-Create a strong, unique Sunshine web username and password.
-
-### 19.6 Sunshine network/security configuration
-
-In the Sunshine Web UI, keep the network configuration conservative:
-
-```text
-UPnP:                  disabled
-Web UI origin:         pc / localhost only
-Address family:        IPv4, unless IPv6 is deliberately required
-External/public IP:    do not configure for this Tailscale-only design
-LAN encryption mode:   mandatory if client compatibility/performance is acceptable
-WAN encryption mode:   mandatory if client compatibility/performance is acceptable
-```
-
-In configuration terms, current Sunshine exposes options such as:
-
-```text
-upnp = disabled
-origin_web_ui_allowed = pc
-lan_encryption_mode = 2
-wan_encryption_mode = 2
-```
-
-Mandatory Sunshine stream encryption is defense in depth; Tailscale already encrypts the underlying network path. If a Moonlight client has a compatibility/performance problem, use Sunshine mode `1` while retaining Tailscale's encrypted transport.
-
-Never set the Web UI to Internet-wide access merely to make pairing easier.
-
-### 19.7 Tailscale admin-console hardening
-
-Open the Tailscale admin console in a browser.
-
-#### Device approval
-
-Enable **Device approval** from Device management.
-
-Approve only devices you recognize, including:
-
-- The Arch workstation.
-- The intended iPad.
-
-Give them clear names.
-
-#### Access controls
-
-Tailscale's default personal-tailnet policy can be permissive. For a remote-streaming-only path, use a deny-by-default policy that grants the selected iPad access only to Sunshine's streaming ports on the workstation.
-
-Get both stable Tailscale IPv4 addresses from the Tailscale app/admin console.
-
-Example policy:
-
-```jsonc
-{
-  "hosts": {
-    "stream-host": "100.HOST.IP.ADDRESS",
-    "ipad-client": "100.IPAD.IP.ADDRESS"
-  },
-
-  "grants": [
-    {
-      "src": ["ipad-client"],
-      "dst": ["stream-host"],
-      "ip": [
-        "tcp:47984",
-        "tcp:47989",
-        "tcp:48010",
-        "udp:47998",
-        "udp:47999",
-        "udp:48000",
-        "udp:48002"
-      ]
-    }
-  ]
-}
-```
-
-This example intentionally does **not** expose Sunshine's Web UI port `47990` to the iPad.
-
-If the tailnet is used for other services, merge this rule with the existing required grants instead of replacing unrelated legitimate policy.
-
-Tailscale recommends modern **grants** for new access-control configurations.
-
-### 19.8 iPad setup
-
-Install from the App Store:
-
-- **Tailscale**
-- **Moonlight Game Streaming**
-
-Open Tailscale.
-
-When iPadOS asks whether Tailscale may add a VPN configuration, allow it. This is required for the Tailscale tunnel.
-
-Sign in to the same tailnet.
-
-If Device approval is enabled, approve the iPad in the Tailscale admin console.
-
-Verify that the iPad can see the workstation in the Tailscale app.
-
-### 19.9 Pair Moonlight with Sunshine
-
-On the Arch workstation:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-on.sh
-```
-
-Check:
-
-```bash
-tailscale status
-systemctl --user status app-dev.lizardbyte.app.Sunshine --no-pager
-```
-
-On the iPad:
-
-1. Enable Tailscale.
-2. Open Moonlight.
-3. If the PC is not discovered automatically, add it manually using the workstation's `100.x.y.z` Tailscale IP or its MagicDNS name.
-4. Moonlight displays a pairing PIN.
-5. On the Arch workstation, open the local Sunshine Web UI.
-6. Open the **PIN** page and enter the Moonlight PIN.
-7. Confirm pairing.
-8. Return to Moonlight and launch the desired desktop/application.
-
-Pairing is normally needed only once per Moonlight client unless clients are removed/reset.
-
-### 19.10 Daily remote workflow
-
-#### Before connecting
-
-On the Arch workstation:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-on.sh
-```
-
-The helper performs local safety checks before starting Sunshine:
-
-1. `firewalld` must already be active.
-2. `tailscaled` is started if necessary.
-3. The helper waits for the Tailscale backend to reach the `Running` state.
-4. A Tailscale IPv4 address must be available.
-5. Sunshine is started only after those checks succeed.
-6. If startup fails, Tailscale is stopped again when it was started by the
-   helper itself.
-
-Verify if needed:
-
-```bash
-systemctl is-active firewalld
-tailscale status
-tailscale ip -4
-systemctl --user is-active app-dev.lizardbyte.app.Sunshine
-```
-
-These checks are defense in depth. They do **not** replace the Tailscale grants
-configured in the admin console. The grants remain the mechanism that limits
-Sunshine access to the explicitly selected client.
-
-#### On the iPad
-
-1. Open Tailscale and ensure it is connected.
-2. Open Moonlight.
-3. Select the Arch workstation.
-4. Start the desktop/application stream.
-
-#### After use
-
-Exit Moonlight cleanly.
-
-On the workstation:
-
-```bash
-cd "$HOME/dotfiles"
-./scripts/remote-off.sh
-```
-
-This stops Sunshine and then stops `tailscaled`.
-
-Optionally disconnect the Tailscale VPN on the iPad as well.
-
-> Running `remote-off.sh` while your **only** active control path is the remote Tailscale/Sunshine session will intentionally terminate that session.
-
-### 19.11 Validate that nothing is publicly exposed
-
-Sunshine:
-
-```bash
-systemctl --user status app-dev.lizardbyte.app.Sunshine --no-pager
-```
-
-Tailscale:
-
-```bash
-tailscale status
-tailscale ip -4
-```
-
-Do not configure router port forwarding for Sunshine ports.
-
-Keep Sunshine UPnP disabled.
-
-Tailscale normally does not require manually opening inbound Internet ports; it performs NAT traversal and falls back to encrypted relays when needed.
+Both are official Arch packages kept as optional software building blocks.
+
+This repository currently does **not**:
+
+- configure WayVNC;
+- enable WayVNC as a remote-desktop service;
+- configure Tailscale for remote desktop;
+- create remote-access credentials;
+- provide remote-on or remote-off helper scripts;
+- define a software remote-desktop security model.
+
+Remote access should therefore be treated as a separate post-installation
+project.
 
 ---
 
@@ -2493,14 +2110,6 @@ Do not add redundant `modeset=1` fixes. Modern Arch NVIDIA packages enable it by
 
 This is informational. Timeshift works without quotas.
 
-### AUR build stops the repository installer
-
-The installer is intentionally fail-fast. Diagnose the failed package independently.
-
-Do not disable integrity/security checks just to get the installation to continue.
-
-If upstream is temporarily broken, remove only the failing package from the local manifest, complete the system deployment, and restore/revisit the package later.
-
 ### Windows boots directly instead of GRUB
 
 Windows/firmware may have changed boot order.
@@ -2529,12 +2138,6 @@ Do not delete Windows Boot Manager.
 - NVIDIA: https://wiki.archlinux.org/title/NVIDIA
 - SDDM: https://wiki.archlinux.org/title/SDDM
 - mkinitcpio: https://wiki.archlinux.org/title/Mkinitcpio
-- Tailscale access controls/grants: https://tailscale.com/docs/features/access-control/grants
-- Tailscale device approval: https://tailscale.com/docs/features/access-control/device-management/device-approval
-- Tailscale encryption: https://tailscale.com/docs/concepts/tailscale-encryption
-- Tailscale iOS VPN on demand: https://tailscale.com/docs/features/client/ios-vpn-on-demand
-- Sunshine documentation: https://docs.lizardbyte.dev/projects/sunshine/latest/
-- Sunshine configuration: https://docs.lizardbyte.dev/projects/sunshine/latest/md_docs_2configuration.html
 
 ---
 

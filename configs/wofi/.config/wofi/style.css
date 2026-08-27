@@ -38,7 +38,7 @@ window {
 /* === WOFI MONOCHROME AESTHETIC === */
 
 * {
-    font-family: "SF Mono", "JetBrainsMono Nerd Font Mono", monospace;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
     font-size: 14px;
     font-weight: 500;
 }
@@ -59,7 +59,7 @@ window {
 }
 
 #input {
-    font-family: "SF Mono", monospace;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
     margin-bottom: 20px;
     padding: 12px 20px;
     border-radius: 12px;
