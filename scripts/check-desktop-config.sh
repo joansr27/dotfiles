@@ -25,7 +25,7 @@ check_command() {
     fi
 }
 
-check_path "$HOME/.config/hypr/hyprland.conf"
+check_path "$HOME/.config/hypr/hyprland.lua"
 check_path "$HOME/.config/hypr/hyprpaper.conf"
 check_path "$HOME/.config/hypr/hyprlock.conf"
 check_path "$HOME/.config/hypr/hypridle.conf"
