@@ -16,7 +16,7 @@
 .local/share/Trash/
 
 # Local machine selection
-/configs/hypr/.config/hypr/machine.conf
+/configs/hypr/.config/hypr/machine.lua
 
 # Private authentication material
 **/.ssh/
