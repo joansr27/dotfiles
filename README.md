@@ -92,6 +92,12 @@ dotfiles/
 │   └── profiles/
 ├── scripts/
 │   └── ...
+├── system/
+│   └── omen/
+│       └── etc/
+│           └── systemd/
+│               └── logind.conf.d/
+│                   └── 60-lid-lock.conf
 ├── wallpapers/
 ├── .gitignore
 └── README.md
@@ -102,13 +108,13 @@ dotfiles/
 Each direct child is a Stow package. For example:
 
 ```text
-configs/hypr/.config/hypr/hyprland.conf
+configs/hypr/.config/hypr/hyprland.lua
 ```
 
 is deployed into:
 
 ```text
-~/.config/hypr/hyprland.conf
+~/.config/hypr/hyprland.lua
 ```
 
 ### `packages/`
@@ -123,6 +129,15 @@ Contains the high-level clean-install migration script.
 
 Contains package resolvers, validators, Stow helpers, machine selection, and
 remote-access controls.
+
+### `system/`
+
+Contains machine-specific system configuration that requires root privileges
+and therefore is not deployed through the user-level GNU Stow configuration.
+
+Applicable files are copied into their system locations by the installer using
+`sudo install`. This keeps `/etc` configuration root-owned instead of linking
+root-consumed configuration to the user-writable repository.
 
 ### `docs/`
 
@@ -396,7 +411,7 @@ must produce no output.
 Machine configuration is selected through:
 
 ```text
-~/.config/hypr/machine.conf
+~/.config/hypr/machine.lua
 ```
 
 Profiles live under:
@@ -556,7 +571,7 @@ Migrate Stow packages deliberately:
 For Hyprland:
 
 ```bash
-test -r "$HOME/.config/hypr/hyprland.conf"
+test -r "$HOME/.config/hypr/hyprland.lua"
 hyprctl reload
 hyprctl configerrors
 ```
@@ -769,13 +784,14 @@ service unless the startup model is deliberately changed.
 
 ### HP OMEN lid policy
 
-The `omen` profile intentionally locks the session instead of suspending when
-the laptop lid is closed. Suspend/resume is currently unreliable on this
-machine, so the system is shut down manually when required.
+The OMEN installation profile intentionally configures systemd-logind to lock 
+the session instead of suspending when the laptop lid is closed. Suspend/resume 
+is currently unreliable on this machine, so the system is shut down manually when
+required.
 
 The systemd-logind policy is stored in the repository at:
 
-    system/omen/etc/systemd/logind.conf.d/10-lid-lock.conf
+    system/omen/etc/systemd/logind.conf.d/60-lid-lock.conf
 
 During an OMEN installation:
 
@@ -783,7 +799,7 @@ During an OMEN installation:
 
 automatically installs this file to:
 
-    /etc/systemd/logind.conf.d/10-lid-lock.conf
+    /etc/systemd/logind.conf.d/60-lid-lock.conf
 
 The configured lid behavior is:
 

@@ -30,6 +30,6 @@ Machine selection:
 
 The local selector:
 
-    configs/hypr/.config/hypr/machine.conf
+    configs/hypr/.config/hypr/machine.lua
 
 is intentionally ignored by Git.

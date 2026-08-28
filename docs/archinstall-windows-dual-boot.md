@@ -1181,8 +1181,8 @@ cd "$HOME/dotfiles"
 Check machine selection:
 
 ```bash
-ls -l "$HOME/.config/hypr/machine.conf"
-readlink -f "$HOME/.config/hypr/machine.conf"
+ls -l "$HOME/.config/hypr/machine.lua"
+readlink -f "$HOME/.config/hypr/machine.lua"
 ```
 
 ---

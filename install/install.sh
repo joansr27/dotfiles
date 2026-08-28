@@ -114,7 +114,7 @@ echo
 echo "=== Installing machine-specific system configuration ==="
 
 if [[ "$profile" == "omen" ]]; then
-    lid_policy="$repo_root/system/omen/etc/systemd/logind.conf.d/10-lid-lock.conf"
+    lid_policy="$repo_root/system/omen/etc/systemd/logind.conf.d/60-lid-lock.conf"
 
     if [[ ! -f "$lid_policy" ]]; then
         echo "Missing OMEN lid policy: $lid_policy" >&2
@@ -124,7 +124,7 @@ if [[ "$profile" == "omen" ]]; then
     sudo install \
         -Dm644 \
         "$lid_policy" \
-        /etc/systemd/logind.conf.d/10-lid-lock.conf
+        /etc/systemd/logind.conf.d/60-lid-lock.conf
 fi
 
 echo
