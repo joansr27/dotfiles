@@ -24,7 +24,8 @@
 **/.password-store/
 **/.local/share/keyrings/
 
-# Browser profiles
+# Browser profiles and state
+**/.mozilla/
 **/.config/google-chrome/
 **/.config/chromium/
 **/.config/BraveSoftware/
@@ -45,3 +46,10 @@
 credentials.json
 secrets.json
 auth.json
+
+# Shell and interactive history
+**/.bash_history
+**/.zsh_history
+**/.python_history
+**/.node_repl_history
+**/.lesshst
