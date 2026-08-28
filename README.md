@@ -784,8 +784,8 @@ service unless the startup model is deliberately changed.
 
 ### HP OMEN lid policy
 
-The OMEN installation profile intentionally configures systemd-logind to lock 
-the session instead of suspending when the laptop lid is closed. Suspend/resume 
+The OMEN installation profile intentionally configures systemd-logind to lock
+the session instead of suspending when the laptop lid is closed. Suspend/resume
 is currently unreliable on this machine, so the system is shut down manually when
 required.
 
