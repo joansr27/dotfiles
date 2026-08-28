@@ -767,6 +767,46 @@ loginctl lock-session
 Do not run duplicate Hypridle instances through both `exec-once` and a user
 service unless the startup model is deliberately changed.
 
+### HP OMEN lid policy
+
+The `omen` profile intentionally locks the session instead of suspending when
+the laptop lid is closed. Suspend/resume is currently unreliable on this
+machine, so the system is shut down manually when required.
+
+The systemd-logind policy is stored in the repository at:
+
+    system/omen/etc/systemd/logind.conf.d/10-lid-lock.conf
+
+During an OMEN installation:
+
+    ./install/install.sh omen
+
+automatically installs this file to:
+
+    /etc/systemd/logind.conf.d/10-lid-lock.conf
+
+The configured lid behavior is:
+
+    HandleLidSwitch=lock
+    HandleLidSwitchExternalPower=lock
+    HandleLidSwitchDocked=lock
+
+Closing the lid therefore locks the current session instead of suspending,
+hibernating, or shutting down the computer. The internal laptop panel powers
+off normally while the lid is physically closed.
+
+Opening the lid restores the display and returns to the locked Hyprlock
+session.
+
+Normal idle behavior remains managed separately by Hypridle:
+
+    300 seconds of inactivity -> lock the session
+    330 seconds of inactivity -> power off the displays
+    user activity             -> power the displays back on
+
+Automatic suspend is intentionally not used on the HP OMEN. This policy can be
+revisited in the future if reliable suspend/resume support becomes available.
+
 ---
 
 ## 16. XDG user directories
