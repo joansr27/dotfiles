@@ -71,9 +71,9 @@ The repository is **not** a full home-directory backup.
 ```text
 dotfiles/
 ├── assets/
-│   ├── hyprlock.jpg
-│   ├── profile.jpg
-│   └── wallpaper.jpg
+│   ├── hyprlock.*
+│   ├── profile.*
+│   └── wallpaper.*
 ├── configs/
 │   ├── hypr/
 │   ├── kitty/
@@ -127,8 +127,8 @@ Contains the high-level clean-install migration script.
 
 ### `scripts/`
 
-Contains package resolvers, validators, Stow helpers, machine selection, and
-remote-access controls.
+Contains package resolvers, validators, Stow helpers, machine selection,
+desktop-asset preparation, and workstation helper scripts.
 
 ### `system/`
 
@@ -319,11 +319,18 @@ cd "$HOME/dotfiles"
 
 find assets wallpapers \
     -type f \
-    \( -iname '*.jpg' -o \
+    \( -iname '*.png' -o \
+       -iname '*.jpg' -o \
        -iname '*.jpeg' -o \
-       -iname '*.png' -o \
        -iname '*.webp' -o \
-       -iname '*.gif' \) \
+       -iname '*.gif' -o \
+       -iname '*.avif' -o \
+       -iname '*.heic' -o \
+       -iname '*.heif' -o \
+       -iname '*.bmp' -o \
+       -iname '*.tif' -o \
+       -iname '*.tiff' -o \
+       -iname '*.jxl' \) \
     -exec exiftool -a -G1 -s {} +
 ```
 
@@ -515,6 +522,8 @@ do
         org.kde.gwenview.desktop \
         "$mime"
 done
+
+```
 
 ### Firefox
 
@@ -1930,11 +1939,12 @@ Their roles are:
 
 ### Image format abstraction
 
+### Image format abstraction
+
 The desktop configuration does not depend on the extension of the source
 images.
 
-Source assets may use any raster format that the installed ImageMagick build
-can read. Common examples include:
+The resolver accepts the following source extensions, case-insensitively:
 
 ```text
 .png
@@ -1942,12 +1952,19 @@ can read. Common examples include:
 .jpeg
 .webp
 .gif
+.avif
+.heic
+.heif
+.bmp
+.tif
+.tiff
+.jxl
 ```
 
-Other ImageMagick-readable formats may also work, but PNG, JPEG, WebP, and GIF
-are the intended common formats.
+The extension alone is not sufficient. ImageMagick must also be able to decode
+the file successfully; unreadable or unsupported files are ignored.
 
-There must be exactly **one readable source image per logical asset**.
+There must be exactly **one readable supported source image per logical asset**.
 
 Valid:
 

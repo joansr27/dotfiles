@@ -26,13 +26,24 @@ fi
 
 resolve_source() {
     local stem="$1"
-    local path
+    local path ext
     local -a candidates=()
 
     shopt -s nullglob nocaseglob
 
     for path in "$assets_dir/$stem".*; do
         [[ -f "$path" ]] || continue
+
+        ext="${path##*.}"
+        ext="${ext,,}"
+
+        case "$ext" in
+            png|jpg|jpeg|webp|gif|avif|heic|heif|bmp|tif|tiff|jxl)
+                ;;
+            *)
+                continue
+                ;;
+        esac
 
         if magick identify -quiet "${path}[0]" >/dev/null 2>&1; then
             candidates+=("$path")

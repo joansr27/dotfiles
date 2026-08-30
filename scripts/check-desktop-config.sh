@@ -37,9 +37,6 @@ check_path "$HOME/.config/wofi/config"
 check_path "$HOME/.config/wofi/style.css"
 check_path "$HOME/.config/user-dirs.conf"
 check_path "$HOME/.config/user-dirs.dirs"
-#check_path "$repo_root/assets/wallpaper.jpg"
-#check_path "$repo_root/assets/hyprlock.jpg"
-#check_path "$repo_root/assets/profile.jpg"
 
 check_command hyprctl
 check_command hyprpaper
