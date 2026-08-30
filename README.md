@@ -452,6 +452,28 @@ Do not assume connector names are identical between machines.
 
 ## 7. Default applications
 
+### Gwenview
+
+Gwenview is the default image viewer.
+
+```bash
+for mime in \
+    image/avif \
+    image/bmp \
+    image/gif \
+    image/heic \
+    image/heif \
+    image/jpeg \
+    image/png \
+    image/svg+xml \
+    image/tiff \
+    image/webp
+do
+    xdg-mime default \
+        org.kde.gwenview.desktop \
+        "$mime"
+done
+
 ### Firefox
 
 ```bash

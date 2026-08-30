@@ -156,6 +156,26 @@ for package_dir in "$repo_root/configs"/*; do
 done
 
 echo
+echo "=== Default image viewer ==="
+
+for mime in \
+    image/avif \
+    image/bmp \
+    image/gif \
+    image/heic \
+    image/heif \
+    image/jpeg \
+    image/png \
+    image/svg+xml \
+    image/tiff \
+    image/webp
+do
+    xdg-mime default \
+        org.kde.gwenview.desktop \
+        "$mime"
+done
+
+echo
 echo "=== Default PDF reader ==="
 
 xdg-mime default \

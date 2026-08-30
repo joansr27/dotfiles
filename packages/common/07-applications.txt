@@ -1,7 +1,7 @@
 dolphin
 firefox
 gimp
-imv
+gwenview
 kitty
 libreoffice-fresh
 nano
