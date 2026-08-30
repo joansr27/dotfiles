@@ -6,6 +6,7 @@ hyprland
 hyprlauncher
 hyprlock
 hyprpaper
+imagemagick
 polkit-kde-agent
 qt5-wayland
 qt6-wayland

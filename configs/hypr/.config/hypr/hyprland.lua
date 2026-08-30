@@ -23,7 +23,7 @@ local mainMod     = "SUPER"
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("waybar -c ~/.config/waybar/config.jsonc -s ~/.config/waybar/style.css")
-    hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("~/dotfiles/scripts/prepare-desktop-assets.sh && hyprpaper")
     hl.exec_cmd("hypridle")
 end)
 

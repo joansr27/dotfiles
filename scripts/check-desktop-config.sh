@@ -37,9 +37,9 @@ check_path "$HOME/.config/wofi/config"
 check_path "$HOME/.config/wofi/style.css"
 check_path "$HOME/.config/user-dirs.conf"
 check_path "$HOME/.config/user-dirs.dirs"
-check_path "$repo_root/assets/wallpaper.jpg"
-check_path "$repo_root/assets/hyprlock.jpg"
-check_path "$repo_root/assets/profile.jpg"
+#check_path "$repo_root/assets/wallpaper.jpg"
+#check_path "$repo_root/assets/hyprlock.jpg"
+#check_path "$repo_root/assets/profile.jpg"
 
 check_command hyprctl
 check_command hyprpaper
@@ -55,6 +55,18 @@ check_command xdg-user-dir
 check_command stow
 check_command wlsunset
 check_command swappy
+check_command magick
+
+echo
+echo "Desktop asset sources:"
+
+if [[ -x "$repo_root/scripts/prepare-desktop-assets.sh" ]]; then
+    "$repo_root/scripts/prepare-desktop-assets.sh" --check ||
+        errors=$((errors + 1))
+else
+    echo "[ERROR] Desktop asset preparation script is missing or not executable." >&2
+    errors=$((errors + 1))
+fi
 
 if command -v hyprctl >/dev/null 2>&1 &&
    [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then

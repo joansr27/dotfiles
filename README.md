@@ -145,19 +145,60 @@ Supporting documentation and dual boot guide.
 
 ### `assets/`
 
-Contains the three visual files currently used by the live desktop
-configuration:
+Contains the three active source images used by the desktop:
 
 ```text
 assets/
-├── wallpaper.jpg
-├── hyprlock.jpg
-└── profile.jpg
+├── wallpaper.*
+├── hyprlock.*
+└── profile.*
 ```
 
-Hyprpaper and Hyprlock always reference these fixed paths. This keeps the
-configuration independent from whichever image from the wallpaper library is
-currently selected.
+The file extension is intentionally not fixed. Each logical asset must have
+exactly one readable source image whose basename is `wallpaper`, `hyprlock`,
+or `profile`.
+
+For example, this is valid:
+
+```text
+assets/
+├── wallpaper.png
+├── hyprlock.jpeg
+└── profile.webp
+```
+
+Image preparation is handled by:
+
+```text
+scripts/prepare-desktop-assets.sh
+```
+
+The script uses ImageMagick to resolve the source images and normalizes them
+into stable PNG files under:
+
+```text
+~/.cache/dotfiles/assets/
+├── wallpaper.png
+├── hyprlock.png
+└── profile.png
+```
+
+Hyprpaper and Hyprlock reference these normalized cache files rather than the
+source files in the repository. This separates desktop configuration from the
+original image format.
+
+The generated cache is runtime state and is not stored in Git.
+
+If an input contains multiple frames, such as an animated GIF, only the first
+frame is used. Animated wallpaper or lock-screen playback is therefore not
+provided by this mechanism.
+
+More than one readable source file for the same logical asset is considered an
+error. For example, `wallpaper.jpg` and `wallpaper.png` must not coexist under
+`assets/`.
+
+See [Changing wallpapers and visual assets](#22-changing-wallpapers-and-visual-assets)
+for the complete workflow.
 
 ### `wallpapers/`
 
@@ -281,7 +322,8 @@ find assets wallpapers \
     \( -iname '*.jpg' -o \
        -iname '*.jpeg' -o \
        -iname '*.png' -o \
-       -iname '*.webp' \) \
+       -iname '*.webp' -o \
+       -iname '*.gif' \) \
     -exec exiftool -a -G1 -s {} +
 ```
 
@@ -1866,52 +1908,296 @@ fresh Arch installation without relying on undocumented manual state.
 
 ## 22. Changing wallpapers and visual assets
 
-The repository separates the image library from the assets currently used by
-Hyprland:
+The active desktop images are stored under:
 
 ```text
-wallpapers/               inactive image library
+~/dotfiles/assets/
+```
 
+There are three logical assets:
+
+```text
+wallpaper.*
+hyprlock.*
+profile.*
+```
+
+Their roles are:
+
+- `wallpaper.*` — normal Hyprland desktop wallpaper.
+- `hyprlock.*` — Hyprlock background.
+- `profile.*` — Hyprlock profile image.
+
+### Image format abstraction
+
+The desktop configuration does not depend on the extension of the source
+images.
+
+Source assets may use any raster format that the installed ImageMagick build
+can read. Common examples include:
+
+```text
+.png
+.jpg
+.jpeg
+.webp
+.gif
+```
+
+Other ImageMagick-readable formats may also work, but PNG, JPEG, WebP, and GIF
+are the intended common formats.
+
+There must be exactly **one readable source image per logical asset**.
+
+Valid:
+
+```text
 assets/
-├── wallpaper.jpg         Hyprpaper desktop wallpaper
-├── hyprlock.jpg          Hyprlock background
-└── profile.jpg           Hyprlock profile image
+├── wallpaper.png
+├── hyprlock.jpg
+└── profile.webp
 ```
 
-The Hyprland configuration always references the fixed files under `assets/`.
-Changing an image therefore does not require editing the configuration.
-
-To change the desktop wallpaper using a graphical file manager:
-
-1. Move `assets/wallpaper.jpg` back into `wallpapers/`, giving it a useful
-   archive name if necessary.
-2. Select a JPEG from `wallpapers/`.
-3. Move it into `assets/`.
-4. Rename it exactly to `wallpaper.jpg`.
-5. Restart Hyprpaper or log out and back in.
-
-Use the same procedure for:
+Invalid:
 
 ```text
-assets/hyprlock.jpg
-assets/profile.jpg
+assets/
+├── wallpaper.jpg
+├── wallpaper.png
+├── hyprlock.jpg
+└── profile.webp
 ```
 
-Replacement files must genuinely use the expected image format. Do not rename
-a PNG or WebP file to `.jpg` without converting it to JPEG first.
+The second example is rejected because two files match the logical
+`wallpaper` asset. The resolver deliberately refuses to choose one
+arbitrarily.
 
-Prefer moving files rather than copying them so large image assets are not
-stored twice in the Git repository.
+### Normalized asset cache
 
-After changing an active asset:
+Hyprpaper and Hyprlock do not consume the repository source files directly.
+
+Before they are used, the source assets are normalized by:
+
+```bash
+~/dotfiles/scripts/prepare-desktop-assets.sh
+```
+
+The generated files are stored under:
+
+```text
+~/.cache/dotfiles/assets/
+├── wallpaper.png
+├── wallpaper.sha256
+├── hyprlock.png
+├── hyprlock.sha256
+├── profile.png
+└── profile.sha256
+```
+
+Hyprpaper and Hyprlock always reference the three `.png` files in this cache.
+
+This provides a stable interface:
+
+```text
+source image in arbitrary supported format
+                │
+                ▼
+prepare-desktop-assets.sh
+                │
+                ▼
+normalized PNG in ~/.cache/dotfiles/assets/
+                │
+        ┌───────┴───────┐
+        ▼               ▼
+    Hyprpaper        Hyprlock
+```
+
+The SHA-256 files record the source state so an unchanged image does not need
+to be converted on every Hyprland startup.
+
+The cache is generated runtime state and must not be committed to the
+repository.
+
+### Animated and multi-frame images
+
+The normalizer explicitly selects frame `0` from the source image.
+
+Therefore, an animated GIF can be used as an input file:
+
+```text
+assets/wallpaper.gif
+```
+
+but the generated wallpaper is a static PNG containing the first frame.
+
+This mechanism does not provide animated wallpapers or animated Hyprlock
+images.
+
+### Preparing assets manually
+
+Check that all three logical source assets can be resolved:
 
 ```bash
 cd "$HOME/dotfiles"
 
-git status --short
-git diff --check
+./scripts/prepare-desktop-assets.sh --check
 ```
 
-Git may report the operation as a rename or as an add/delete pair depending on
-how the files were moved. Either representation is normal; review the intended
-files before committing.
+Generate or refresh the normalized cache:
+
+```bash
+./scripts/prepare-desktop-assets.sh
+```
+
+Inspect the result:
+
+```bash
+ls -lh "$HOME/.cache/dotfiles/assets"
+file "$HOME/.cache/dotfiles/assets/"*.png
+```
+
+Running the preparation script again without modifying the source images
+should report that the cache is already current.
+
+### Changing the desktop wallpaper
+
+Choose an image from the wallpaper library:
+
+```text
+~/dotfiles/wallpapers/
+```
+
+and place or copy it under `assets/` using the logical basename `wallpaper`
+while preserving its original extension.
+
+For example:
+
+```bash
+cp \
+    "$HOME/dotfiles/wallpapers/Nocturne-of-Steel-and-Glass.png" \
+    "$HOME/dotfiles/assets/wallpaper.png"
+```
+
+Remove the previous `wallpaper.*` source so that only one readable wallpaper
+source remains.
+
+Then regenerate the cache:
+
+```bash
+cd "$HOME/dotfiles"
+./scripts/prepare-desktop-assets.sh
+```
+
+Restart Hyprpaper in the current session:
+
+```bash
+pkill hyprpaper
+hyprpaper &
+disown
+```
+
+No Hyprpaper configuration change is required when the source extension
+changes.
+
+### Changing the Hyprlock background
+
+Replace the existing `hyprlock.*` source with exactly one new image, for
+example:
+
+```text
+assets/hyprlock.jpeg
+```
+
+Then run:
+
+```bash
+cd "$HOME/dotfiles"
+./scripts/prepare-desktop-assets.sh
+```
+
+The next Hyprlock instance automatically reads:
+
+```text
+~/.cache/dotfiles/assets/hyprlock.png
+```
+
+No `hyprlock.conf` modification is required.
+
+### Changing the Hyprlock profile picture
+
+Replace the existing `profile.*` source with exactly one new image, for
+example:
+
+```text
+assets/profile.webp
+```
+
+Then run:
+
+```bash
+cd "$HOME/dotfiles"
+./scripts/prepare-desktop-assets.sh
+```
+
+The next Hyprlock instance automatically reads:
+
+```text
+~/.cache/dotfiles/assets/profile.png
+```
+
+No `hyprlock.conf` modification is required.
+
+### Automatic preparation at Hyprland startup
+
+Hyprland prepares the desktop assets before starting Hyprpaper.
+
+Conceptually, startup performs:
+
+```bash
+~/dotfiles/scripts/prepare-desktop-assets.sh && hyprpaper
+```
+
+Therefore a normal login reconstructs missing or outdated normalized assets
+before the wallpaper daemon starts.
+
+The preparation script uses SHA-256 state files to avoid unnecessary image
+conversion when the source files have not changed.
+
+### Validation
+
+Validate the source assets independently with:
+
+```bash
+./scripts/prepare-desktop-assets.sh --check
+```
+
+Run the complete desktop configuration validation with:
+
+```bash
+./scripts/check-desktop-config.sh
+```
+
+A valid configuration requires:
+
+1. ImageMagick to be installed.
+2. `prepare-desktop-assets.sh` to be executable.
+3. Exactly one readable `wallpaper.*` source.
+4. Exactly one readable `hyprlock.*` source.
+5. Exactly one readable `profile.*` source.
+
+If multiple readable files have the same logical basename, remove the obsolete
+source rather than relying on filename or extension precedence.
+
+### SDDM
+
+The normalized files under:
+
+```text
+~/.cache/dotfiles/assets/
+```
+
+are user-session assets.
+
+SDDM runs outside the normal user session and should not depend on this
+user-specific cache. SDDM visual assets are therefore handled separately from
+the Hyprpaper/Hyprlock asset pipeline.
