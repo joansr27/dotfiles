@@ -1937,7 +1937,6 @@ Their roles are:
 - `hyprlock.*` — Hyprlock background.
 - `profile.*` — Hyprlock profile image.
 
-### Image format abstraction
 
 ### Image format abstraction
 
