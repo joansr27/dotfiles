@@ -1,57 +1,138 @@
-@define-color background rgba(245, 240, 236, 0.0);
-@define-color bubble rgba(230, 220, 211, 1.0);
-@define-color contour rgba(205, 190, 178, 1.0);
-@define-color text rgba(92, 75, 65, 1.0);
+/* LIGHT
+@define-color bar rgba(242, 242, 247, 0.94);
+@define-color hover rgba(60, 60, 67, 0.10);
+@define-color hover-strong rgba(60, 60, 67, 0.16);
+@define-color separator rgba(60, 60, 67, 0.16);
+
+@define-color text rgba(28, 28, 30, 0.96);
+@define-color text-muted rgba(60, 60, 67, 0.55);
+*/
+
+/* DARK */
+@define-color bar rgba(30, 30, 30, 0.92);
+@define-color hover rgba(255, 255, 255, 0.10);
+@define-color hover-strong rgba(255, 255, 255, 0.16);
+@define-color separator rgba(255, 255, 255, 0.10);
+
+@define-color text rgba(255, 255, 255, 0.92);
+@define-color text-muted rgba(235, 235, 245, 0.55);
+
+
+
+/* =========================================================
+ * Global typography
+ * ========================================================= */
 
 * {
     border: none;
     border-radius: 0;
 
-    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    /*
+     * Inter gives normal text a macOS-like appearance.
+     *
+     * JetBrainsMono Nerd Font Mono remains in the fallback
+     * chain so existing Nerd Font icons keep resolving.
+     */
+    font-family:
+        "Inter",
+        "JetBrainsMono Nerd Font Mono",
+        sans-serif;
+
+    /*
+     * Keep the existing size conservative because many of the
+     * icons use relative Pango sizes such as 120%, 130% and 160%.
+     */
     font-size: 8pt;
-    font-weight: bold;
+    font-weight: 600;
 
     color: @text;
 }
 
+
+/* =========================================================
+ * Main macOS-style menu bar
+ * ========================================================= */
+
 window#waybar.pinned {
-    background-color: @background;
-    border-radius: 10px;
+    background-color: @bar;
+
+    /*
+     * macOS uses one continuous bar rather than independent
+     * floating bubbles.
+     */
+    border-radius: 0;
+
+    /*
+     * Very subtle lower separation from the desktop.
+     */
+    border-bottom: 1px solid @separator;
 }
 
-/* Right-side bubbles */
 
+/* =========================================================
+ * Existing Waybar groups
+ *
+ * Keep every group structurally intact, but make its normal
+ * state visually merge into the menu bar.
+ * ========================================================= */
+
+#power-menu,
+#workspace-dock,
 #time-date,
 #sound,
 #connections,
 #hardware,
 #display,
 #batteries {
-    background-color: @bubble;
-    border-radius: 100px;
+    background-color: transparent;
+
+    border-radius: 7px;
 
     padding: 0 5px;
 
-    margin-right: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    /*
+     * The bar is 30 px tall.
+     * 3 px above and below gives each hover region a compact
+     * 24 px macOS-style control height.
+     */
+    margin-top: 3px;
+    margin-bottom: 3px;
+
+    margin-left: 1px;
+    margin-right: 1px;
+
+    transition:
+        background-color 0.15s ease,
+        opacity 0.15s ease;
 }
 
-/* Left-side bubbles */
 
-#power-menu,
-#workspace-dock {
-    background-color: @bubble;
-    border-radius: 100px;
+/* =========================================================
+ * Bubble hover
+ *
+ * At rest, the groups are visually indistinguishable from the
+ * bar. Hovering reveals the existing grouping.
+ * ========================================================= */
 
-    padding: 0 5px;
-
-    margin-left: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+#power-menu:hover,
+#workspace-dock:hover,
+#time-date:hover,
+#sound:hover,
+#connections:hover,
+#hardware:hover,
+#display:hover,
+#batteries:hover {
+    background-color: @hover;
 }
 
-/* Standard modules */
+
+/* =========================================================
+ * Standard modules
+ *
+ * IMPORTANT:
+ * Keep the current 10 px horizontal padding. Your icons and
+ * text offsets were designed around it.
+ * ========================================================= */
 
 #clock,
 #network,
@@ -67,7 +148,13 @@ window#waybar.pinned {
     min-height: 0;
 }
 
-/* Custom modules */
+
+/* =========================================================
+ * Custom modules
+ *
+ * Again, preserve existing padding because several icon
+ * alignments depend on it.
+ * ========================================================= */
 
 #custom-hardware-status,
 #custom-display-mode,
@@ -85,9 +172,15 @@ window#waybar.pinned {
     padding: 0 10px;
     min-height: 0;
 
-    transition: all 0.3s ease;
+    transition:
+        background-color 0.15s ease,
+        opacity 0.15s ease;
 }
-/* Wi-Fi and Bluetooth state */
+
+
+/* =========================================================
+ * Wi-Fi and Bluetooth state
+ * ========================================================= */
 
 #network,
 #bluetooth.connected {
@@ -102,43 +195,121 @@ window#waybar.pinned {
     opacity: 0.5;
 }
 
-/* Inline system drawer */
+
+/* =========================================================
+ * Inline system drawer
+ *
+ * Preserve your existing drawer behaviour.
+ * ========================================================= */
 
 #group-sysmenu {
-    border-radius: 12px;
+    background-color: transparent;
+
+    border-radius: 7px;
+
     padding: 0 4px;
     min-height: 0;
 
-    transition: all 0.3s ease;
+    transition:
+        background-color 0.15s ease,
+        opacity 0.15s ease;
 }
 
+
+/*
+ * Preserve the existing behaviour where the menu icon
+ * disappears as the drawer opens.
+ */
 #group-sysmenu:hover #custom-sysmenu {
     font-size: 0;
+
     padding: 0;
     margin: 0;
+
     opacity: 0;
 }
 
-#custom-display-mode:hover,
-#custom-power-profile:hover,
+
+/*
+ * Individual system-menu actions get a slightly stronger
+ * macOS-style selection highlight.
+ */
 #custom-lock:hover,
 #custom-sleep:hover,
 #custom-exit:hover,
 #custom-reboot:hover,
-#custom-power:hover,
-#custom-nightlight:hover {
-    opacity: 0.5;
+#custom-power:hover {
+    background-color: @hover-strong;
+    border-radius: 6px;
 }
-/* Tooltips */
 
+
+/* =========================================================
+ * Other clickable controls
+ * ========================================================= */
+
+#custom-display-mode:hover,
+#custom-power-profile:hover,
+#custom-nightlight:hover {
+    background-color: @hover-strong;
+    border-radius: 6px;
+}
+
+
+/* =========================================================
+ * Workspace buttons
+ * ========================================================= */
+
+#workspaces button {
+    border-radius: 6px;
+
+    transition:
+        background-color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+#workspaces button:hover {
+    background-color: @hover-strong;
+}
+
+
+/* =========================================================
+ * Tooltips
+ * ========================================================= */
+
+/* LIGHT
 tooltip {
-    background: alpha(#1E1E1E, 0.95);
-    border: 1px solid #2D2D2D;
-    border-radius: 10px;
+    background-color: rgba(30, 30, 30, 0.96);
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
 }
 
 tooltip label {
     padding: 4px 8px;
-    color: #E8E8E8;
+
+    color: rgba(248, 248, 248, 1.0);
+
+    font-family: "Inter", sans-serif;
     font-size: 11px;
+    font-weight: 500;
+}
+*/
+
+/* DARK */
+tooltip {
+    background-color: rgba(44, 44, 46, 0.98);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+}
+
+tooltip label {
+    padding: 4px 8px;
+
+    color: rgba(255, 255, 255, 0.92);
+
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
 }

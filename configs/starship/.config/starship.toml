@@ -1,0 +1,51 @@
+# ============================================================
+# COMPACT GLASS-LIKE PROMPT
+# ============================================================
+
+add_newline = true
+
+format = """
+$directory$git_branch$git_status$character"""
+
+
+# ============================================================
+# DIRECTORY CAPSULE
+# ============================================================
+
+[directory]
+style = "fg:#E6E8EB bg:#2B2F36"
+truncation_length = 4
+truncate_to_repo = false
+
+format = "[](fg:#2B2F36)[ $path ]($style)"
+
+
+# ============================================================
+# GIT BRANCH
+# ============================================================
+
+[git_branch]
+symbol = " "
+style = "fg:#9AB7E3 bg:#2B2F36"
+
+format = "[$symbol$branch ]($style)"
+
+
+# ============================================================
+# GIT STATUS
+# ============================================================
+
+[git_status]
+style = "fg:#D7B879 bg:#2B2F36"
+
+format = "[$all_status$ahead_behind]($style)"
+
+
+# ============================================================
+# PROMPT CHARACTER
+# ============================================================
+
+[character]
+success_symbol = "[](fg:#2B2F36) [❯](bold fg:#8FCB9B) "
+error_symbol = "[](fg:#2B2F36) [❯](bold fg:#E08088) "
+vimcmd_symbol = "[](fg:#2B2F36) [❮](bold fg:#8FCB9B) "

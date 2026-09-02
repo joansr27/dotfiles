@@ -12,6 +12,7 @@ less
 lm_sensors
 perl-image-exiftool
 ripgrep
+starship
 stow
 tree
 unzip
