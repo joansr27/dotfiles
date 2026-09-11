@@ -1,21 +1,23 @@
-/* LIGHT
-@define-color bar rgba(242, 242, 247, 0.94);
-@define-color hover rgba(60, 60, 67, 0.10);
+/* LIGHT */
+@define-color bar rgba(152, 152, 157, 1.0);
+/* @define-color hover rgba(60, 60, 67, 0.10); */
+@define-color hover rgba(182, 182, 187, 1.0);
 @define-color hover-strong rgba(60, 60, 67, 0.16);
 @define-color separator rgba(60, 60, 67, 0.16);
 
 @define-color text rgba(28, 28, 30, 0.96);
 @define-color text-muted rgba(60, 60, 67, 0.55);
-*/
 
-/* DARK */
-@define-color bar rgba(30, 30, 30, 0.92);
+
+/* DARK
+@define-color bar rgba(30, 30, 30, 0.0);
 @define-color hover rgba(255, 255, 255, 0.10);
 @define-color hover-strong rgba(255, 255, 255, 0.16);
 @define-color separator rgba(255, 255, 255, 0.10);
 
 @define-color text rgba(255, 255, 255, 0.92);
 @define-color text-muted rgba(235, 235, 245, 0.55);
+*/
 
 
 
@@ -61,11 +63,10 @@ window#waybar.pinned {
      * floating bubbles.
      */
     border-radius: 0;
-
     /*
      * Very subtle lower separation from the desktop.
      */
-    border-bottom: 1px solid @separator;
+    /* border-bottom: 1px solid @separator; */
 }
 
 
@@ -84,7 +85,8 @@ window#waybar.pinned {
 #hardware,
 #display,
 #batteries {
-    background-color: transparent;
+    /* background-color: transparent; */
+    background-color:  rgba(152, 152, 157, 1.0);
 
     border-radius: 7px;
 
@@ -122,7 +124,7 @@ window#waybar.pinned {
 #hardware:hover,
 #display:hover,
 #batteries:hover {
-    background-color: @hover;
+    background-color: @hover; 
 }
 
 
@@ -277,7 +279,7 @@ window#waybar.pinned {
  * Tooltips
  * ========================================================= */
 
-/* LIGHT
+/* LIGHT */
 tooltip {
     background-color: rgba(30, 30, 30, 0.96);
 
@@ -294,9 +296,9 @@ tooltip label {
     font-size: 11px;
     font-weight: 500;
 }
-*/
 
-/* DARK */
+
+/* DARK
 tooltip {
     background-color: rgba(44, 44, 46, 0.98);
 
@@ -313,3 +315,4 @@ tooltip label {
     font-size: 11px;
     font-weight: 500;
 }
+*/

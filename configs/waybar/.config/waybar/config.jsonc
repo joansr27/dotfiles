@@ -211,9 +211,9 @@
     "battery": {
         "format": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span>",
 
-        "format-charging": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
-        "format-plugged": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
-        "format-full": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span> <span size='110%' rise='2000'></span>",
+        "format-charging": "<span rise='3000'>{capacity}%</span>  <span size='110%' rise='2000'></span>",
+        "format-plugged": "<span rise='3000'>{capacity}% <span size='110%' rise='2000'></span>",
+        "format-full": "<span rise='3000'>{capacity}%</span> <span size='160%'>{icon}</span>",
 
         "format-icons": [
             "",
