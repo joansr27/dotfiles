@@ -1,7 +1,7 @@
 /* LIGHT */
-@define-color bar rgba(152, 152, 157, 1.0);
+@define-color bar rgba(172, 172, 177, 1.0);
 /* @define-color hover rgba(60, 60, 67, 0.10); */
-@define-color hover rgba(182, 182, 187, 1.0);
+@define-color hover rgba(202, 202, 207, 1.0);
 @define-color hover-strong rgba(60, 60, 67, 0.16);
 @define-color separator rgba(60, 60, 67, 0.16);
 
@@ -86,7 +86,7 @@ window#waybar.pinned {
 #display,
 #batteries {
     /* background-color: transparent; */
-    background-color:  rgba(152, 152, 157, 1.0);
+    background-color:  rgba(172, 172, 177, 1.0);
 
     border-radius: 7px;
 

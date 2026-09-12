@@ -69,10 +69,10 @@ hl.config({
 
         blur = {
             enabled = true,
-            size = 7,
-            passes = 2,
+            size = 8,
+            passes = 3,
             new_optimizations = true,
-            vibrancy = 0.1,
+	    vibrancy = 0.1,
         },
     },
 
@@ -257,4 +257,22 @@ hl.window_rule({
     float = true,
     center = true,
     animation = "popin 80%",
+})
+
+-- Run: "hyprctl clients" to see the name of the window class
+
+local glass_opacity = 0.7
+
+hl.window_rule({
+    name = "firefox-glass",
+    match = { class = "firefox" },
+    opacity = glass_opacity .. " override " ..
+              glass_opacity .. " override 1.0 override",
+})
+
+hl.window_rule({
+    name = "musescore-glass",
+    match = { class = "MuseScore4" },
+    opacity = glass_opacity .. " override " ..
+              glass_opacity .. " override 1.0 override",
 })

@@ -4,6 +4,8 @@ gimp
 gwenview
 kitty
 libreoffice-fresh
+musescore
 nano
 neovim
 okular
+thunderbird
