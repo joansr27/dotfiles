@@ -261,7 +261,7 @@ hl.window_rule({
 
 -- Run: "hyprctl clients" to see the name of the window class
 
-local glass_opacity = 0.7
+local glass_opacity = 0.70
 
 hl.window_rule({
     name = "firefox-glass",
@@ -273,6 +273,13 @@ hl.window_rule({
 hl.window_rule({
     name = "musescore-glass",
     match = { class = "MuseScore4" },
+    opacity = glass_opacity .. " override " ..
+              glass_opacity .. " override 1.0 override",
+})
+
+hl.window_rule({
+    name = "thunderbird-glass",
+    match = { class = "org.mozilla.Thunderbird" },
     opacity = glass_opacity .. " override " ..
               glass_opacity .. " override 1.0 override",
 })
