@@ -1,4 +1,5 @@
 dmidecode
+gcc-fortran
 lshw
 python-astropy
 python-matplotlib
